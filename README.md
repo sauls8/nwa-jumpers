@@ -55,10 +55,11 @@ nwa-jumpers/
 - [x] Backend initialized with Express + TypeScript
 - [x] Dependencies installed
 - [x] Basic Express server with health check endpoint
+- [x] Set up SQLite database connection
+- [x] Create bookings table schema
+- [x] Database initialization on server startup
 
 ### 🔄 Next Steps (Days 2-4)
-- [ ] Set up SQLite database connection
-- [ ] Create bookings table schema
 - [ ] Build POST /api/bookings endpoint
 - [ ] Build GET /api/bookings endpoint
 - [ ] Test endpoints with Postman/Thunder Client
@@ -82,6 +83,23 @@ nwa-jumpers/
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: SQLite3
 - **Styling**: CSS (Tailwind coming in Week 2)
+
+## Database Schema
+
+### Bookings Table
+```sql
+CREATE TABLE bookings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  event_date TEXT NOT NULL,
+  bounce_house_type TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+```
+
+**File Location:** `node-api/bookings.db` (auto-created on server start)
 
 ## Available Scripts
 

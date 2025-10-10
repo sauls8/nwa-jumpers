@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { initializeDatabase } from './database';
 
 // Load environment variables
 dotenv.config();
@@ -17,8 +18,24 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'NWA Jumpers API is running' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+/**
+ * Initialize database and start server
+ */
+const startServer = async () => {
+  try {
+    // Initialize database first
+    await initializeDatabase();
+    
+    // Then start the server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the application
+startServer();
 
