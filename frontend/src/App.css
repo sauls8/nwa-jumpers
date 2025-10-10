@@ -1,0 +1,38 @@
+.App {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+header {
+  margin-bottom: 3rem;
+}
+
+header h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  color: #646cff;
+}
+
+header p {
+  font-size: 1.2rem;
+  color: #888;
+}
+
+.welcome-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+.welcome-section h2 {
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.welcome-section p {
+  color: #888;
+  font-size: 1.1rem;
+}
