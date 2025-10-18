@@ -1,5 +1,5 @@
 import express from 'express';
-import { Booking, getBookingsOrderedByDateQuery, getBookingsByDateQuery } from '../models/bookingSchema';
+import { Booking, getBookingsOrderedByDateQuery } from '../models/bookingSchema';
 import { database } from '../database';
 
 const router = express.Router();

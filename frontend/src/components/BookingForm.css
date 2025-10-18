@@ -8,6 +8,101 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.selected-category {
+  background: rgba(14, 165, 233, 0.1);
+  border: 2px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.selected-category p {
+  margin: 0;
+  color: #0ea5e9;
+  font-size: 1.1rem;
+}
+
+.selected-inflatable {
+  background: rgba(100, 108, 255, 0.1);
+  border: 2px solid #646cff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.inflatable-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.inflatable-image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.inflatable-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inflatable-details {
+  flex: 1;
+}
+
+.inflatable-details h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.inflatable-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #646cff;
+  margin: 0 0 0.75rem 0;
+}
+
+.inflatable-description {
+  color: #6b7280;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.inflatable-specs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.inflatable-specs span {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Mobile responsiveness for selected inflatable */
+@media (max-width: 768px) {
+  .inflatable-info {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .inflatable-image {
+    width: 100%;
+    height: 150px;
+  }
+  
+  .inflatable-specs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
 .booking-form-container h2 {
   text-align: center;
   margin-bottom: 2rem;

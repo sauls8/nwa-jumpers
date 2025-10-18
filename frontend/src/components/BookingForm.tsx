@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './BookingForm.css';
+import type { Inflatable } from '../data/inflatables';
 
 interface BookingData {
   customer_name: string;
@@ -7,6 +8,11 @@ interface BookingData {
   customer_phone: string;
   event_date: string;
   bounce_house_type: string;
+}
+
+interface BookingFormProps {
+  selectedCategory?: string;
+  selectedInflatable?: Inflatable | null;
 }
 
 const BOUNCE_HOUSE_OPTIONS = [
@@ -20,13 +26,13 @@ const BOUNCE_HOUSE_OPTIONS = [
   'Custom Theme'
 ];
 
-const BookingForm: React.FC = () => {
+const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInflatable }) => {
   const [formData, setFormData] = useState<BookingData>({
     customer_name: '',
     customer_email: '',
     customer_phone: '',
     event_date: '',
-    bounce_house_type: ''
+    bounce_house_type: selectedInflatable?.name || ''
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -127,6 +133,30 @@ const BookingForm: React.FC = () => {
   return (
     <div className="booking-form-container">
       <h2>Book Your Bounce House</h2>
+      {selectedCategory && (
+        <div className="selected-category">
+          <p>Selected Category: <strong>{selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</strong></p>
+        </div>
+      )}
+      
+      {selectedInflatable && (
+        <div className="selected-inflatable">
+          <div className="inflatable-info">
+            <div className="inflatable-image">
+              <img src={selectedInflatable.image} alt={selectedInflatable.name} />
+            </div>
+            <div className="inflatable-details">
+              <h3>{selectedInflatable.name}</h3>
+              <p className="inflatable-price">${selectedInflatable.price}</p>
+              <p className="inflatable-description">{selectedInflatable.description}</p>
+              <div className="inflatable-specs">
+                <span><strong>Capacity:</strong> {selectedInflatable.capacity}</span>
+                <span><strong>Size:</strong> {selectedInflatable.dimensions}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="booking-form">
         {error && <div className="error-message">{error}</div>}
         
