@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { initializeDatabase } from './database';
+import bookingsRouter from './routes/bookings';
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,9 @@ app.use(express.json());
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', message: 'NWA Jumpers API is running' });
 });
+
+// Bookings routes
+app.use('/api/bookings', bookingsRouter);
 
 /**
  * Initialize database and start server
