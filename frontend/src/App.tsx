@@ -1,4 +1,5 @@
 import './App.css'
+import BookingForm from './components/BookingForm'
 
 function App() {
   return (
@@ -9,10 +10,7 @@ function App() {
       </header>
       
       <main>
-        <div className="welcome-section">
-          <h2>Welcome to NWA Jumpers!</h2>
-          <p>Your booking system is being built...</p>
-        </div>
+        <BookingForm />
       </main>
     </div>
   )

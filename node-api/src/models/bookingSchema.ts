@@ -15,6 +15,18 @@ export const createBookingsTableQuery = `
   )
 `;
 
+// Query to get bookings ordered by date (for admin view)
+export const getBookingsOrderedByDateQuery = `
+  SELECT * FROM bookings 
+  ORDER BY event_date ASC, created_at DESC
+`;
+
+// Query to check if a specific date is booked
+export const getBookingsByDateQuery = `
+  SELECT * FROM bookings 
+  WHERE event_date = ?
+`;
+
 /**
  * TypeScript interface for type safety
  */

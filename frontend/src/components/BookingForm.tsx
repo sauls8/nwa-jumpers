@@ -1,0 +1,217 @@
+import React, { useState } from 'react';
+import './BookingForm.css';
+
+interface BookingData {
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  event_date: string;
+  bounce_house_type: string;
+}
+
+const BOUNCE_HOUSE_OPTIONS = [
+  'Castle Bounce House',
+  'Princess Castle',
+  'Superhero Theme',
+  'Sports Arena',
+  'Obstacle Course',
+  'Water Slide Combo',
+  'Toddler Bounce House',
+  'Custom Theme'
+];
+
+const BookingForm: React.FC = () => {
+  const [formData, setFormData] = useState<BookingData>({
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    event_date: '',
+    bounce_house_type: ''
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateForm = (): boolean => {
+    if (!formData.customer_name.trim()) {
+      setError('Name is required');
+      return false;
+    }
+    if (!formData.customer_email.trim()) {
+      setError('Email is required');
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customer_email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    if (!formData.customer_phone.trim()) {
+      setError('Phone number is required');
+      return false;
+    }
+    if (!formData.event_date) {
+      setError('Event date is required');
+      return false;
+    }
+    if (!formData.bounce_house_type) {
+      setError('Please select a bounce house type');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSuccess(true);
+        setFormData({
+          customer_name: '',
+          customer_email: '',
+          customer_phone: '',
+          event_date: '',
+          bounce_house_type: ''
+        });
+      } else {
+        setError(result.message || 'Failed to create booking');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="booking-success">
+        <h3>🎉 Booking Submitted Successfully!</h3>
+        <p>Thank you for choosing NWA Jumpers! We'll contact you soon to confirm your booking.</p>
+        <button 
+          onClick={() => setIsSuccess(false)}
+          className="btn btn-secondary"
+        >
+          Make Another Booking
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="booking-form-container">
+      <h2>Book Your Bounce House</h2>
+      <form onSubmit={handleSubmit} className="booking-form">
+        {error && <div className="error-message">{error}</div>}
+        
+        <div className="form-group">
+          <label htmlFor="customer_name">Full Name *</label>
+          <input
+            type="text"
+            id="customer_name"
+            name="customer_name"
+            value={formData.customer_name}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="customer_email">Email Address *</label>
+          <input
+            type="email"
+            id="customer_email"
+            name="customer_email"
+            value={formData.customer_email}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="customer_phone">Phone Number *</label>
+          <input
+            type="tel"
+            id="customer_phone"
+            name="customer_phone"
+            value={formData.customer_phone}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="event_date">Event Date *</label>
+          <input
+            type="date"
+            id="event_date"
+            name="event_date"
+            value={formData.event_date}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+            min={new Date().toISOString().split('T')[0]}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="bounce_house_type">Bounce House Type *</label>
+          <select
+            id="bounce_house_type"
+            name="bounce_house_type"
+            value={formData.bounce_house_type}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          >
+            <option value="">Select a bounce house...</option>
+            {BOUNCE_HOUSE_OPTIONS.map(option => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button 
+          type="submit" 
+          className="btn btn-primary"
+          disabled={isLoading}
+        >
+          {isLoading ? 'Submitting...' : 'Submit Booking'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default BookingForm;

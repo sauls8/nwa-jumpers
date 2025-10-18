@@ -1,15 +1,42 @@
 import express from 'express';
-import { Booking } from '../models/bookingSchema';
+import { Booking, getBookingsOrderedByDateQuery, getBookingsByDateQuery } from '../models/bookingSchema';
 import { database } from '../database';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    const bookings = await database.all('SELECT * FROM bookings');
+    // Get bookings ordered by event date (for admin calendar view)
+    const bookings = await database.all(getBookingsOrderedByDateQuery);
     res.json(bookings as Booking[]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch bookings' as string });
+  }
+});
+
+// New endpoint to check availability for a specific date
+router.get('/availability/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+    
+    // Use the raw database instance for parameterized queries
+    const query = `SELECT * FROM bookings WHERE event_date = ?`;
+    const bookings = await new Promise<Booking[]>((resolve, reject) => {
+      database.instance.all(query, [date], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows as Booking[]);
+      });
+    });
+    
+    res.json({
+      date,
+      isAvailable: bookings.length === 0,
+      bookingsCount: bookings.length,
+      message: bookings.length === 0 ? 'Date is available' : 'Date is booked'
+    });
+  } catch (error) {
+    console.error('Availability check error:', error);
+    res.status(500).json({ error: 'Failed to check availability' });
   }
 });
 

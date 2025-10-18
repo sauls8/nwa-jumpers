@@ -1,6 +1,8 @@
 # NWA Jumpers - Bounce House Booking System
 
-A full-stack booking system for bounce house rentals built with React, TypeScript, Node.js, Express, and SQLite.
+A **prototype** full-stack booking system for bounce house rentals built with React, TypeScript, Node.js, Express, and SQLite.
+
+> **🚧 This is a prototype/demo project** - The booking form and features are subject to change as we iterate and improve the system.
 
 ## Project Structure
 
@@ -58,17 +60,15 @@ nwa-jumpers/
 - [x] Set up SQLite database connection
 - [x] Create bookings table schema
 - [x] Database initialization on server startup
+- [x] Build POST /api/bookings endpoint
+- [x] Build GET /api/bookings endpoint
+- [x] Create frontend booking form component
+- [x] Connect frontend to backend API
 
-### 🔄 Next Steps (Days 2-4)
-- [ ] Build POST /api/bookings endpoint
-- [ ] Build GET /api/bookings endpoint
-- [ ] Test endpoints with Postman/Thunder Client
-
-### 📅 Days 5-7
-- [ ] Create booking form component in React
-- [ ] Connect frontend to backend API
-- [ ] Display submitted bookings
-- [ ] Add form validation
+### 🔄 Next Steps (Days 5-7)
+- [ ] Display submitted bookings on frontend
+- [ ] Add form validation improvements
+- [ ] Test full user flow
 
 ### 📅 Week 2 (Days 8-14)
 - [ ] Admin dashboard
@@ -119,5 +119,16 @@ CREATE TABLE bookings (
 - **GET** `http://localhost:3001/api/health` - Check if API is running
   - Response: `{ "status": "ok", "message": "NWA Jumpers API is running" }`
 
-*More endpoints coming soon...*
+### Bookings API
+- **GET** `http://localhost:3001/api/bookings` - Get all bookings (ordered by date)
+- **POST** `http://localhost:3001/api/bookings` - Create new booking
+- **GET** `http://localhost:3001/api/bookings/availability/:date` - Check if date is available
+  - Example: `GET /api/bookings/availability/2025-10-15`
+  - Response: `{ "date": "2025-10-15", "isAvailable": true, "bookings": 0, "message": "Date is available" }`
+
+### Future Features (Prototype Roadmap)
+- 📅 **Admin Calendar View** - Visual calendar showing booked (red) vs available (green) dates
+- 📊 **Admin Dashboard** - View all bookings with filtering and sorting
+- 📄 **CSV Export** - Download booking data
+- 🎨 **Enhanced UI** - Tailwind CSS styling and responsive design
 
