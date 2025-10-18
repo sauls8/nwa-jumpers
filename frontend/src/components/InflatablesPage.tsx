@@ -1,6 +1,6 @@
 import React from 'react';
 import './InflatablesPage.css';
-import { getInflatablesByCategory, Inflatable } from '../data/inflatables';
+import { inflatablesData, type Inflatable } from '../data/inflatables';
 
 interface InflatablesPageProps {
   categoryId: string;
@@ -13,7 +13,7 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
   onInflatableSelect, 
   onBackToCategories 
 }) => {
-  const inflatables = getInflatablesByCategory(categoryId);
+  const inflatables: Inflatable[] = inflatablesData.filter(inflatable => inflatable.category === categoryId);
   
   const getCategoryTitle = (categoryId: string): string => {
     const titles: { [key: string]: string } = {
@@ -46,7 +46,7 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
       </div>
       
       <div className="inflatables-grid">
-        {inflatables.map((inflatable) => (
+        {inflatables.map((inflatable: Inflatable) => (
           <div
             key={inflatable.id}
             className="inflatable-card"
@@ -73,7 +73,7 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
               </div>
               
               <div className="features-list">
-                {inflatable.features.map((feature, index) => (
+                {inflatable.features.map((feature: string, index: number) => (
                   <span key={index} className="feature-tag">
                     {feature}
                   </span>

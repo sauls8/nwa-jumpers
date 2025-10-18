@@ -2,10 +2,11 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(31, 41, 55, 0.8);
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  color: #f9fafb;
 }
 
 .selected-category {
@@ -85,6 +86,71 @@
   color: #374151;
 }
 
+/* Date Input with Calendar */
+.date-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #374151;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #1f2937;
+  color: #f9fafb;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.date-input:hover {
+  border-color: #646cff;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.calendar-toggle-btn {
+  background: #374151;
+  border: 2px solid #374151;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 0.75rem;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  margin-left: -2px;
+  color: #d1d5db;
+}
+
+.calendar-toggle-btn:hover {
+  background: #4b5563;
+  border-color: #646cff;
+  color: #f9fafb;
+}
+
+.calendar-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.calendar-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
 /* Mobile responsiveness for selected inflatable */
 @media (max-width: 768px) {
   .inflatable-info {
@@ -100,6 +166,16 @@
   .inflatable-specs {
     flex-direction: column;
     gap: 0.5rem;
+  }
+  
+  .calendar-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 400px;
+    z-index: 1001;
   }
 }
 

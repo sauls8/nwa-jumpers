@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './BookingForm.css';
 import type { Inflatable } from '../data/inflatables';
+import Calendar from './Calendar';
+import { checkDateAvailability } from '../services/availabilityService';
 
 interface BookingData {
   customer_name: string;
@@ -38,6 +40,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string>('');
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -45,6 +48,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleDateSelect = (date: string) => {
+    setFormData(prev => ({
+      ...prev,
+      event_date: date
+    }));
+    setShowCalendar(false);
+  };
+
+  const handleCalendarToggle = () => {
+    setShowCalendar(!showCalendar);
   };
 
   const validateForm = (): boolean => {
@@ -201,16 +216,37 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
 
         <div className="form-group">
           <label htmlFor="event_date">Event Date *</label>
-          <input
-            type="date"
-            id="event_date"
-            name="event_date"
-            value={formData.event_date}
-            onChange={handleInputChange}
-            required
-            disabled={isLoading}
-            min={new Date().toISOString().split('T')[0]}
-          />
+          <div className="date-input-container">
+            <input
+              type="text"
+              id="event_date"
+              name="event_date"
+              value={formData.event_date ? new Date(formData.event_date).toLocaleDateString() : ''}
+              onClick={handleCalendarToggle}
+              readOnly
+              placeholder="Click to select date"
+              className="date-input"
+              required
+              disabled={isLoading}
+            />
+            <button
+              type="button"
+              onClick={handleCalendarToggle}
+              className="calendar-toggle-btn"
+              disabled={isLoading}
+            >
+              📅
+            </button>
+          </div>
+          {showCalendar && (
+            <div className="calendar-container">
+              <Calendar
+                selectedDate={formData.event_date}
+                onDateSelect={handleDateSelect}
+                onAvailabilityCheck={checkDateAvailability}
+              />
+            </div>
+          )}
         </div>
 
         <div className="form-group">
