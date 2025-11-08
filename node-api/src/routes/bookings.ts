@@ -1,5 +1,6 @@
 import express from 'express';
 import PDFDocument from 'pdfkit';
+import type PDFKit from 'pdfkit';
 import { 
   Booking, 
   type BookingItem,
@@ -117,6 +118,281 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const hasProp = (obj: Record<string, unknown>, key: string): boolean =>
   Object.prototype.hasOwnProperty.call(obj, key);
+
+const formatCurrency = (value: number | null | undefined, fallback = '$0.00'): string => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return fallback;
+  }
+  const rounded = Number(value);
+  return `$${rounded.toFixed(2)}`;
+};
+
+const formatPercent = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '—';
+  }
+  return `${Number(value).toFixed(2)}%`;
+};
+
+const formatDate = (value: string | null | undefined): string => {
+  if (!value) {
+    return 'Not specified';
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return parsed.toLocaleDateString();
+};
+
+const formatTime = (value: string | null | undefined): string => {
+  if (!value) {
+    return '—';
+  }
+  const [hours, minutes] = value.split(':');
+  if (!hours) return value;
+  const date = new Date();
+  date.setHours(Number(hours), Number(minutes ?? 0), 0, 0);
+  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+};
+
+const formatEventTimeRange = (start: string | null | undefined, end: string | null | undefined): string => {
+  const startStr = formatTime(start);
+  const endStr = formatTime(end);
+  if (startStr === '—' && endStr === '—') {
+    return 'Not specified';
+  }
+  if (startStr === '—') {
+    return `Until ${endStr}`;
+  }
+  if (endStr === '—') {
+    return `${startStr} (end TBD)`;
+  }
+  return `${startStr} – ${endStr}`;
+};
+
+const formatYesNo = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) {
+    return 'Not specified';
+  }
+  return value === 1 ? 'Yes' : 'No';
+};
+
+const calculateItemTotal = (item: BookingItem): number => {
+  const quantity = Number(item.quantity ?? 0);
+  const unitPrice = Number(item.unit_price ?? 0);
+  const explicitTotal = Number(item.total_price ?? 0);
+  if (!Number.isNaN(explicitTotal) && explicitTotal !== 0) {
+    return explicitTotal;
+  }
+  return Number((quantity * unitPrice).toFixed(2));
+};
+
+const renderRentalAgreementPdf = (doc: PDFKit.PDFDocument, booking: Booking, items: BookingItem[]) => {
+  const margin = 36;
+  const lineHeight = 18;
+  const pageWidth = doc.page.width - margin * 2;
+  let cursorY = margin;
+
+  const drawSectionTitle = (title: string) => {
+    doc.font('Helvetica-Bold').fontSize(12).text(title, margin, cursorY);
+    cursorY += lineHeight;
+    doc.moveTo(margin, cursorY - 4).lineTo(margin + pageWidth, cursorY - 4).strokeColor('#475569').lineWidth(0.5).stroke();
+  };
+
+  const drawKeyValueRow = (rows: Array<[string, string]>, options?: { columns?: number }) => {
+    const columns = options?.columns ?? rows.length;
+    const columnWidth = pageWidth / columns;
+    doc.font('Helvetica').fontSize(10);
+
+    rows.forEach(([key, value], idx) => {
+      const x = margin + columnWidth * (idx % columns);
+      const y = cursorY + Math.floor(idx / columns) * lineHeight;
+      doc.font('Helvetica-Bold').text(`${key}: `, x, y, { continued: true });
+      doc.font('Helvetica').text(value);
+    });
+
+    const rowsCount = Math.ceil(rows.length / columns);
+    cursorY += rowsCount * lineHeight;
+    cursorY += 4;
+  };
+
+  const drawTable = (headers: string[], rows: string[][]) => {
+    const columnWidths = headers.map((_, idx) => {
+      if (idx === headers.length - 1) {
+        return pageWidth - (headers.length - 1) * (pageWidth / headers.length);
+      }
+      return pageWidth / headers.length;
+    });
+
+    doc.font('Helvetica-Bold').fontSize(10);
+    let x = margin;
+    headers.forEach((header, idx) => {
+      doc.text(header, x, cursorY, { width: columnWidths[idx], underline: false });
+      x += columnWidths[idx];
+    });
+    cursorY += lineHeight;
+    doc.moveTo(margin, cursorY - 4).lineTo(margin + pageWidth, cursorY - 4).strokeColor('#475569').lineWidth(0.5).stroke();
+
+    doc.font('Helvetica').fontSize(10);
+    rows.forEach((row) => {
+      let rowX = margin;
+      row.forEach((cell, idx) => {
+        doc.text(cell, rowX, cursorY, { width: columnWidths[idx] });
+        rowX += columnWidths[idx];
+      });
+      cursorY += lineHeight;
+    });
+
+    cursorY += 6;
+  };
+
+  const ensureSpace = (height: number) => {
+    if (cursorY + height > doc.page.height - margin * 2) {
+      doc.addPage();
+      cursorY = margin;
+    }
+  };
+
+  const submittedAt = booking.created_at ?? new Date().toISOString();
+
+  doc.font('Helvetica-Bold').fontSize(24).text('NWA Jumpers', margin, cursorY);
+  cursorY += lineHeight;
+
+  doc.font('Helvetica').fontSize(10).text('A Division of CR Communications LLC', margin, cursorY);
+  cursorY += lineHeight;
+  doc.text('(479) 696-4040 | Rentals Agreement', margin, cursorY);
+  cursorY += lineHeight;
+  doc.text('Website: www.nwajumpers.com | Email: info@nwajumpers.com', margin, cursorY);
+  cursorY += lineHeight * 1.5;
+
+  doc.font('Helvetica').fontSize(10).text(`Generated: ${new Date(submittedAt).toLocaleString()}`, margin, cursorY, { align: 'right', width: pageWidth });
+  cursorY += lineHeight;
+  doc.text(`Booking ID: ${booking.id ?? '—'}`, margin, cursorY, { align: 'right', width: pageWidth });
+  cursorY += lineHeight * 1.2;
+
+  ensureSpace(lineHeight * 6);
+  drawSectionTitle('Customer & Event');
+  drawKeyValueRow([
+    ['Customer', booking.customer_name ?? '—'],
+    ['Organization', booking.organization_name ?? '—'],
+    ['Phone', booking.customer_phone ?? '—'],
+    ['Email', booking.customer_email ?? '—'],
+  ], { columns: 2 });
+
+  drawKeyValueRow([
+    ['Event Date', formatDate(booking.event_date)],
+    ['Setup Date', formatDate(booking.setup_date)],
+    ['Event Time', formatEventTimeRange(booking.event_start_time, booking.event_end_time)],
+    ['Delivery Window', booking.delivery_window ?? '—'],
+    ['After Hours', booking.after_hours_window ?? '—'],
+    ['Indoor', formatYesNo(booking.event_is_indoor)],
+  ], { columns: 2 });
+
+  drawKeyValueRow([
+    ['Event Address', booking.event_address ?? '—'],
+    ['Surface Type', booking.event_surface ?? '—'],
+  ], { columns: 1 });
+
+  ensureSpace(lineHeight * 6);
+  const lineItemRows = items.length > 0
+    ? items.map((item, index) => [
+        String(index + 1),
+        item.product_name ?? '—',
+        item.product_category ?? '—',
+        String(item.quantity ?? 1),
+        formatCurrency(item.unit_price ?? 0),
+        formatCurrency(calculateItemTotal(item)),
+      ])
+    : [
+        ['1', booking.bounce_house_type ?? 'Bounce House', 'Primary', '1', formatCurrency(booking.subtotal_amount ?? 0), formatCurrency(booking.subtotal_amount ?? 0)],
+      ];
+
+  drawSectionTitle('Line Items');
+  drawTable(
+    ['#', 'Product', 'Category', 'Qty', 'Unit Price', 'Total'],
+    lineItemRows
+  );
+
+  ensureSpace(lineHeight * 6);
+  const subtotal = booking.subtotal_amount ?? lineItemRows.reduce((sum, row) => sum + Number(row[5].replace(/[^0-9.-]+/g, '')), 0);
+  const deliveryFee = booking.delivery_fee ?? 0;
+  const taxAmount = booking.tax_amount ?? 0;
+  const totalAmount = booking.total_amount ?? subtotal + deliveryFee + taxAmount;
+  const deposit = booking.deposit_amount ?? 0;
+  const balance = booking.balance_due ?? totalAmount - deposit;
+
+  drawSectionTitle('Cost Summary');
+  drawKeyValueRow([
+    ['Subtotal', formatCurrency(subtotal)],
+    ['Discount', booking.discount_percent !== null && booking.discount_percent !== undefined ? formatPercent(booking.discount_percent) : '—'],
+    ['Delivery Fee', formatCurrency(deliveryFee)],
+    ['Tax (est.)', formatCurrency(taxAmount)],
+    ['Total', formatCurrency(totalAmount)],
+    ['Deposit', formatCurrency(deposit)],
+    ['Balance Due', formatCurrency(balance)],
+    ['Payment Method', booking.payment_method ?? '—'],
+  ], { columns: 2 });
+
+  ensureSpace(lineHeight * 6);
+  drawSectionTitle('Notes & Internal Information');
+  doc.font('Helvetica').fontSize(10).text(
+    booking.internal_notes && booking.internal_notes.trim().length > 0
+      ? booking.internal_notes
+      : 'No internal notes recorded.',
+    margin,
+    cursorY,
+    { width: pageWidth }
+  );
+  cursorY += lineHeight * 3;
+
+  ensureSpace(lineHeight * 12);
+  drawSectionTitle('Rental Agreement & Liability Waiver');
+  const waiverParagraphs = [
+    'It is the responsibility of the person(s) or organization hiring this inflatable equipment to ensure that all possible precautions are taken to avoid injury to people or damage to the inflatable. The following safety instructions are to be obeyed at all times:',
+    '1) No food, drink or chewing gum on or around the inflatable. This will avoid choking and keep the unit clean.',
+    '2) Shoes, glasses, jewelry, badges MUST be removed before using the inflatable.',
+    '3) Do not push, collide, fight or behave in a manner likely to injure or cause distress to others.',
+    '4) No pets, toys or sharp instruments on the inflatable at any time.',
+    '5) No smoking or fires near the inflatable.',
+    '6) Adult supervision is required at all times. The lessee is responsible for enforcing safety rules.',
+    '7) The blower must be turned off in high winds or stormy weather and the unit vacated.',
+    '8) The lessee agrees to pay in full for any damage to the inflatable due to negligence.',
+  ];
+
+  doc.font('Helvetica').fontSize(9);
+  waiverParagraphs.forEach((paragraph) => {
+    ensureSpace(lineHeight * 2);
+    doc.text(paragraph, margin, cursorY, { width: pageWidth, lineGap: 2 });
+    cursorY += lineHeight * (paragraph.startsWith('1') ? 1.2 : 1);
+  });
+
+  ensureSpace(lineHeight * 4);
+  doc.font('Helvetica-Bold').text('Tax Notice:', margin, cursorY);
+  cursorY += lineHeight;
+  doc.font('Helvetica').text(
+    'According to the state of Arkansas rentals are subject to a 10% tax. De acuerdo al estado de Arkansas cualquier tipo de renta o alquiler está sujeto a un 10% tax.',
+    margin,
+    cursorY,
+    { width: pageWidth }
+  );
+  cursorY += lineHeight * 2;
+
+  ensureSpace(lineHeight * 3);
+  doc.moveTo(margin, cursorY).lineTo(margin + pageWidth / 2, cursorY).strokeColor('#475569').stroke();
+  doc.moveTo(margin + pageWidth / 2 + 40, cursorY).lineTo(margin + pageWidth, cursorY).stroke();
+  cursorY += 6;
+  doc.font('Helvetica').text('Signature (after reading rules)', margin, cursorY);
+  doc.text('Date', margin + pageWidth / 2 + 40, cursorY);
+  cursorY += lineHeight * 2;
+
+  doc.text(`Printed Name: ____________________________`, margin, cursorY);
+  cursorY += lineHeight * 2;
+
+  doc.text('Thank you for choosing NWA Jumpers!', margin, cursorY, { align: 'center', width: pageWidth });
+
+  doc.end();
+};
 
 router.get('/', async (req, res) => {
   try {
@@ -429,58 +705,13 @@ router.get('/:id/pdf', async (req, res) => {
     const items = bookingWithItems?.items ?? [];
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=booking-${booking.id}.pdf`);
+    const safeName = (booking.customer_name ?? 'booking').replace(/\s+/g, '-').toLowerCase();
+    res.setHeader('Content-Disposition', `attachment; filename=booking-${booking.id}-${safeName}.pdf`);
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 36, size: 'LETTER' });
     doc.pipe(res);
 
-    const eventStart = booking.event_start_time ?? 'Not specified';
-    const eventEnd = booking.event_end_time ?? 'Not specified';
-    const eventTimeLabel = `${eventStart} - ${eventEnd}`;
-    const submittedAt = booking.created_at ?? 'N/A';
-    const organization = booking.organization_name ?? 'Not specified';
-    const address = booking.event_address ?? 'Not specified';
-    const deliveryWindow = booking.delivery_window ?? 'Not specified';
-
-    doc.fontSize(20).text('NWA Jumpers Booking Summary', { align: 'center' });
-    doc.moveDown();
-
-    doc.fontSize(12);
-    doc.text(`Booking ID: ${booking.id}`);
-    doc.text(`Created: ${submittedAt}`);
-    doc.moveDown();
-
-    doc.text('Customer Details', { underline: true });
-    doc.text(`Name: ${booking.customer_name}`);
-    doc.text(`Email: ${booking.customer_email}`);
-    doc.text(`Phone: ${booking.customer_phone}`);
-    doc.text(`Organization: ${organization}`);
-    doc.moveDown();
-
-    doc.text('Event Details', { underline: true });
-    doc.text(`Event Date: ${booking.event_date}`);
-    doc.text(`Event Time: ${eventTimeLabel}`);
-    doc.text(`Bounce House: ${booking.bounce_house_type}`);
-    doc.text(`Event Address: ${address}`);
-    doc.text(`Delivery Window: ${deliveryWindow}`);
-    doc.moveDown();
-
-    if (items.length > 0) {
-      doc.text('Line Items', { underline: true });
-      items.forEach((item, index) => {
-        const total = item.total_price ?? item.quantity * item.unit_price;
-        doc.text(
-          `${index + 1}. ${item.product_name} (x${item.quantity}) - $${total.toFixed(2)}`
-        );
-      });
-      doc.moveDown();
-    }
-
-    doc.text('Notes', { underline: true });
-    doc.text('Please review this booking with the customer prior to the delivery date.');
-    doc.text('Bring this summary on-site for quick reference and signature capture if needed.');
-
-    doc.end();
+    renderRentalAgreementPdf(doc, booking, items);
   } catch (error) {
     console.error('PDF generation error:', error);
     if (!res.headersSent) {
