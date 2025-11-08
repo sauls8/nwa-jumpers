@@ -34,7 +34,6 @@ const Calendar: React.FC<CalendarProps> = ({
     
     // First day of the month
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     
     // Start from Sunday of the first week
     const startDate = new Date(firstDay);

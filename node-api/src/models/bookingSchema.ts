@@ -27,6 +27,12 @@ export const getBookingsOrderedByDateQuery = `
 export const getBookingsByDateQuery = `
   SELECT * FROM bookings 
   WHERE event_date = ?
+  ORDER BY event_start_time ASC, created_at DESC
+`;
+
+export const getBookingByIdQuery = `
+  SELECT * FROM bookings
+  WHERE id = ?
 `;
 
 /**
@@ -38,8 +44,8 @@ export interface Booking {
   customer_email: string;
   customer_phone: string;
   event_date: string;
-  event_start_time: string;
-  event_end_time: string;
+  event_start_time: string | null;
+  event_end_time: string | null;
   bounce_house_type: string;
   created_at?: string;
 }

@@ -6,17 +6,18 @@ A **prototype** full-stack booking system for bounce house rentals built with Re
 
 ## 🎯 Current Status
 
-**✅ Phase 1 Complete: Static Prototype**
-- Beautiful categories page with 2x4 grid layout
-- 4 real categories (Castle, Superhero, Sports, Toddler) + 4 "Coming Soon" placeholders
-- Full-width background and responsive design
-- Complete frontend routing structure ready for interactivity
-- Backend API with SQLite database fully functional
+**✅ Core Prototype Functionality Complete**
+- Responsive categories grid (4 live categories + 4 placeholders)
+- Category → Inflatable → Booking flow with pre-filled selections
+- Dark-mode UI across categories, inflatables, booking form, and admin tools
+- Integrated availability calendar pulling live data from SQLite
+- Booking form captures event date plus start/end times with validation
+- Admin dashboard filters bookings by date and exports PDF summaries
+- Backend REST API with SQLite persistence, availability checks, and PDF generation
 
-**🚀 Ready for Phase 2: Interactive Features**
-- Categories are currently static (not clickable)
-- Next step: Make categories clickable to navigate to inflatables
-- Full user flow: Categories → Inflatables → Booking Form
+**🛠️ Entering Refinement Phase**
+- Next focus areas: data accuracy, copy/design polish, admin UX, and deployment readiness
+- See “🔍 Refinement Roadmap” for detailed tasks and known gaps
 
 ## Project Structure
 
@@ -65,42 +66,47 @@ nwa-jumpers/
 ## Development Roadmap
 
 ### ✅ Phase 1: Static Prototype (COMPLETED)
-- [x] Project structure created
-- [x] Git repository initialized
-- [x] Frontend scaffolded with Vite + React + TypeScript
-- [x] Backend initialized with Express + TypeScript
-- [x] Dependencies installed
-- [x] Basic Express server with health check endpoint
-- [x] Set up SQLite database connection
-- [x] Create bookings table schema
-- [x] Database initialization on server startup
-- [x] Build POST /api/bookings endpoint
-- [x] Build GET /api/bookings endpoint
-- [x] Create frontend booking form component
-- [x] Connect frontend to backend API
-- [x] **NEW: Beautiful 2x4 grid categories page with 4 real categories + 4 "Coming Soon" placeholders**
-- [x] **NEW: Full-width background and responsive design**
-- [x] **NEW: Professional hover effects and styling**
-- [x] **NEW: Complete frontend routing structure (Categories → Inflatables → Booking)**
-- [x] **NEW: Inflatables data structure with categorized bounce houses**
-- [x] **NEW: TypeScript type safety throughout the application**
+- [x] Project skeleton (React + Vite + TypeScript frontend, Express + TypeScript backend)
+- [x] Git workflow established, `.gitignore` configured
+- [x] SQLite connection & bookings table bootstrap
+- [x] Health check endpoint and basic CRUD wiring
+- [x] Categories grid (4 live + 4 “Coming Soon”) with responsive styling
+- [x] Inflatables dataset and reusable component structure
+- [x] Dark-mode visual baseline
 
-### 🚀 Phase 2: Interactive Features (NEXT UP)
-- [ ] **Make categories clickable** - Navigate from categories to inflatables page
-- [ ] **Test full user flow** - Categories → Inflatables → Booking Form
-- [ ] **Add navigation between pages** - Back buttons and proper routing
-- [ ] **Connect inflatables to booking form** - Pre-populate selected inflatable
+### ✅ Phase 2: Interactive Features (COMPLETED)
+- [x] Category → Inflatable → Booking navigation & back buttons
+- [x] Booking form pre-populates selected inflatable
+- [x] Form validation + success/failure feedback
+- [x] End-to-end API integration with fetch + async handling
 
-### 📅 Phase 3: Calendar Integration (Week 2)
-- [ ] **Admin Calendar View** - Visual calendar showing booked (red) vs available (green) dates
-- [ ] **Date availability checking** - Real-time availability in booking form
-- [ ] **Calendar component** - Interactive date picker with availability status
+### ✅ Phase 3: Calendar Integration (COMPLETED)
+- [x] Interactive calendar component with month navigation
+- [x] Real-time availability checks (booked = red, available = green)
+- [x] Calendar-driven date selection inside the booking form
+- [x] Dark-mode styling + mobile responsiveness
 
-### 🎯 Phase 4: Admin Features (Week 2)
-- [ ] **Admin Dashboard** - View all bookings with filtering and sorting
-- [ ] **CSV Export** - Download booking data
-- [ ] **Enhanced UI** - Tailwind CSS styling and responsive design
-- [ ] **Final testing and deployment**
+### ✅ Phase 4: Admin Features (COMPLETED)
+- [x] Admin dashboard view with date picker & booking count summary
+- [x] Filter bookings by event date (real data from API)
+- [x] PDF summary export via backend `pdfkit`
+- [x] Booking form captures event start/end times
+- [x] Availability endpoint and admin dashboard handle legacy records without times
+
+### 🔍 Refinement Roadmap (Week 3+)
+- [ ] Replace placeholder copy/images with real catalog content
+- [ ] Add admin authentication / access control
+- [ ] Improve error states (network failures, empty results, validation hints)
+- [ ] Allow admin to refresh bookings without toggling date (manual refresh button or auto polling)
+- [ ] Surface booking source (web/phone/manual) & internal notes field
+- [ ] CSV export or email summary for daily schedule
+- [ ] Deployment checklist (env handling, build scripts, hosting strategy)
+
+### 🚧 Future Enhancements (Wish List)
+- [ ] Payment integration & pricing calculator
+- [ ] Customer booking confirmation emails/SMS
+- [ ] Multi-day rentals & delivery logistics tracking
+- [ ] Tailwind or component library adoption once UI stabilizes
 
 ## Tech Stack
 
@@ -119,6 +125,8 @@ CREATE TABLE bookings (
   customer_email TEXT NOT NULL,
   customer_phone TEXT NOT NULL,
   event_date TEXT NOT NULL,
+  event_start_time TEXT NOT NULL,
+  event_end_time TEXT NOT NULL,
   bounce_house_type TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
@@ -145,15 +153,27 @@ CREATE TABLE bookings (
   - Response: `{ "status": "ok", "message": "NWA Jumpers API is running" }`
 
 ### Bookings API
-- **GET** `http://localhost:3001/api/bookings` - Get all bookings (ordered by date)
-- **POST** `http://localhost:3001/api/bookings` - Create new booking
-- **GET** `http://localhost:3001/api/bookings/availability/:date` - Check if date is available
+- **GET** `http://localhost:3001/api/bookings` - Get all bookings (ordered by event date)
+- **POST** `http://localhost:3001/api/bookings` - Create new booking (requires event start/end time)
+- **GET** `http://localhost:3001/api/bookings/availability/:date` - Check if specific date has any bookings
   - Example: `GET /api/bookings/availability/2025-10-15`
   - Response: `{ "date": "2025-10-15", "isAvailable": true, "bookings": 0, "message": "Date is available" }`
+- **GET** `http://localhost:3001/api/bookings/by-date/:date` - Admin endpoint to fetch bookings for a date
+  - Example: `GET /api/bookings/by-date/2025-10-31`
+  - Response: `{ "date": "...", "bookings": [ { ...booking fields... } ] }`
+- **GET** `http://localhost:3001/api/bookings/:id/pdf` - Download printable PDF summary for a booking
+  - Response headers: `Content-Type: application/pdf`, attachment filename `booking-<id>.pdf`
 
-### Future Features (Prototype Roadmap)
-- 📅 **Admin Calendar View** - Visual calendar showing booked (red) vs available (green) dates
-- 📊 **Admin Dashboard** - View all bookings with filtering and sorting
-- 📄 **CSV Export** - Download booking data
-- 🎨 **Enhanced UI** - Tailwind CSS styling and responsive design
+### Admin UI Quick Start
+- Launch both dev servers (`cd node-api && npm run dev`, `cd frontend && npm run dev -- --host`)
+- Visit `http://localhost:5173`, click **Admin Dashboard**
+- Pick a date to load bookings, download PDFs via “⬇ Download PDF”
+- Create a new booking from the customer flow and toggle the date picker to refresh
+
+### Known Gaps During Refinement
+- Legacy seed bookings lack event start/end times (displayed as “Time TBD” until updated)
+- No authentication separating admin/customer views
+- No direct way to refresh admin data without touching the date picker
+- Deployment pipeline & environment configs still local-only
+- Test coverage limited to manual end-to-end checks
 

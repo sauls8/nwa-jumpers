@@ -1,5 +1,11 @@
 import express from 'express';
-import { Booking, getBookingsOrderedByDateQuery } from '../models/bookingSchema';
+import PDFDocument from 'pdfkit';
+import { 
+  Booking, 
+  getBookingByIdQuery, 
+  getBookingsByDateQuery, 
+  getBookingsOrderedByDateQuery 
+} from '../models/bookingSchema';
 import { database } from '../database';
 
 const router = express.Router();
@@ -7,10 +13,32 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     // Get bookings ordered by event date (for admin calendar view)
-    const bookings = await database.all(getBookingsOrderedByDateQuery);
-    res.json(bookings as Booking[]);
+    const bookings = await database.all(getBookingsOrderedByDateQuery) as Booking[];
+    res.json(bookings);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch bookings' as string });
+  }
+});
+
+// Admin: get all bookings for a specific date
+router.get('/by-date/:date', async (req, res) => {
+  try {
+    const { date } = req.params;
+
+    const bookings = await new Promise<Booking[]>((resolve, reject) => {
+      database.instance.all(getBookingsByDateQuery, [date], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows as Booking[]);
+      });
+    });
+
+    res.json({
+      date,
+      bookings
+    });
+  } catch (error) {
+    console.error('Bookings by date error:', error);
+    res.status(500).json({ error: 'Failed to fetch bookings for date' });
   }
 });
 
@@ -19,10 +47,8 @@ router.get('/availability/:date', async (req, res) => {
   try {
     const { date } = req.params;
     
-    // Use the raw database instance for parameterized queries
-    const query = `SELECT * FROM bookings WHERE event_date = ?`;
     const bookings = await new Promise<Booking[]>((resolve, reject) => {
-      database.instance.all(query, [date], (err, rows) => {
+      database.instance.all(getBookingsByDateQuery, [date], (err, rows) => {
         if (err) reject(err);
         else resolve(rows as Booking[]);
       });
@@ -37,6 +63,71 @@ router.get('/availability/:date', async (req, res) => {
   } catch (error) {
     console.error('Availability check error:', error);
     res.status(500).json({ error: 'Failed to check availability' });
+  }
+});
+
+// Admin: generate PDF summary for a booking
+router.get('/:id/pdf', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await new Promise<Booking | undefined>((resolve, reject) => {
+      database.instance.get(getBookingByIdQuery, [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row as Booking | undefined);
+      });
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=booking-${booking.id}.pdf`);
+
+    const doc = new PDFDocument({ margin: 50 });
+    doc.pipe(res);
+
+    const eventStart = booking.event_start_time ?? 'Not specified';
+    const eventEnd = booking.event_end_time ?? 'Not specified';
+    const eventTimeLabel = `${eventStart} - ${eventEnd}`;
+    const submittedAt = booking.created_at ?? 'N/A';
+
+    doc.fontSize(20).text('NWA Jumpers Booking Summary', { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(12);
+    doc.text(`Booking ID: ${booking.id}`);
+    doc.text(`Created: ${submittedAt}`);
+    doc.moveDown();
+
+    doc.text('Customer Details', { underline: true });
+    doc.text(`Name: ${booking.customer_name}`);
+    doc.text(`Email: ${booking.customer_email}`);
+    doc.text(`Phone: ${booking.customer_phone}`);
+    doc.moveDown();
+
+    doc.text('Event Details', { underline: true });
+    doc.text(`Event Date: ${booking.event_date}`);
+    doc.text(`Event Time: ${eventTimeLabel}`);
+    doc.text(`Bounce House: ${booking.bounce_house_type}`);
+    doc.moveDown();
+
+    doc.text('Notes', { underline: true });
+    doc.text('Please review this booking with the customer prior to the delivery date.');
+    doc.text('Bring this summary on-site for quick reference and signature capture if needed.');
+
+    doc.end();
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to generate booking PDF' });
+    } else {
+      res.end();
+    }
   }
 });
 
