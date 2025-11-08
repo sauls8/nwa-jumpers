@@ -128,11 +128,44 @@ CREATE TABLE bookings (
   event_start_time TEXT NOT NULL,
   event_end_time TEXT NOT NULL,
   bounce_house_type TEXT NOT NULL,
+  organization_name TEXT,
+  event_address TEXT,
+  event_surface TEXT,
+  event_is_indoor INTEGER,
+  invoice_number TEXT,
+  contract_number TEXT,
+  setup_date TEXT,
+  delivery_window TEXT,
+  after_hours_window TEXT,
+  discount_percent REAL,
+  subtotal_amount REAL,
+  delivery_fee REAL,
+  tax_amount REAL,
+  total_amount REAL,
+  deposit_amount REAL,
+  balance_due REAL,
+  payment_method TEXT,
+  internal_notes TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ```
 
 **File Location:** `node-api/bookings.db` (auto-created on server start)
+
+### Booking Items Table
+```sql
+CREATE TABLE booking_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  booking_id INTEGER NOT NULL,
+  quantity REAL DEFAULT 1,
+  unit_price REAL DEFAULT 0,
+  product_name TEXT NOT NULL,
+  product_category TEXT,
+  total_price REAL DEFAULT 0,
+  notes TEXT,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+```
 
 ## Available Scripts
 
@@ -161,6 +194,8 @@ CREATE TABLE bookings (
 - **GET** `http://localhost:3001/api/bookings/by-date/:date` - Admin endpoint to fetch bookings for a date
   - Example: `GET /api/bookings/by-date/2025-10-31`
   - Response: `{ "date": "...", "bookings": [ { ...booking fields... } ] }`
+- **GET** `http://localhost:3001/api/bookings/:id` - Fetch a single booking with admin fields and line items
+- **PUT** `http://localhost:3001/api/bookings/:id` - Update booking details, cost breakdown, and line items
 - **GET** `http://localhost:3001/api/bookings/:id/pdf` - Download printable PDF summary for a booking
   - Response headers: `Content-Type: application/pdf`, attachment filename `booking-<id>.pdf`
 
@@ -169,6 +204,44 @@ CREATE TABLE bookings (
 - Visit `http://localhost:5173`, click **Admin Dashboard**
 - Pick a date to load bookings, download PDFs via “⬇ Download PDF”
 - Create a new booking from the customer flow and toggle the date picker to refresh
+
+### Manual Database Upgrade (for existing clones)
+Run the following SQL statements against `node-api/bookings.db` to add the new admin fields and the line items table (skip any columns that already exist):
+
+```sql
+ALTER TABLE bookings ADD COLUMN organization_name TEXT;
+ALTER TABLE bookings ADD COLUMN event_address TEXT;
+ALTER TABLE bookings ADD COLUMN event_surface TEXT;
+ALTER TABLE bookings ADD COLUMN event_is_indoor INTEGER;
+ALTER TABLE bookings ADD COLUMN invoice_number TEXT;
+ALTER TABLE bookings ADD COLUMN contract_number TEXT;
+ALTER TABLE bookings ADD COLUMN setup_date TEXT;
+ALTER TABLE bookings ADD COLUMN delivery_window TEXT;
+ALTER TABLE bookings ADD COLUMN after_hours_window TEXT;
+ALTER TABLE bookings ADD COLUMN discount_percent REAL;
+ALTER TABLE bookings ADD COLUMN subtotal_amount REAL;
+ALTER TABLE bookings ADD COLUMN delivery_fee REAL;
+ALTER TABLE bookings ADD COLUMN tax_amount REAL;
+ALTER TABLE bookings ADD COLUMN total_amount REAL;
+ALTER TABLE bookings ADD COLUMN deposit_amount REAL;
+ALTER TABLE bookings ADD COLUMN balance_due REAL;
+ALTER TABLE bookings ADD COLUMN payment_method TEXT;
+ALTER TABLE bookings ADD COLUMN internal_notes TEXT;
+
+CREATE TABLE IF NOT EXISTS booking_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  booking_id INTEGER NOT NULL,
+  quantity REAL DEFAULT 1,
+  unit_price REAL DEFAULT 0,
+  product_name TEXT NOT NULL,
+  product_category TEXT,
+  total_price REAL DEFAULT 0,
+  notes TEXT,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+```
+
+> ℹ️ SQLite does not support `IF NOT EXISTS` on `ADD COLUMN`, so you can ignore the “duplicate column name” error if a column is already present.
 
 ### Known Gaps During Refinement
 - Legacy seed bookings lack event start/end times (displayed as “Time TBD” until updated)

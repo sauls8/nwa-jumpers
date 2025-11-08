@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import './AdminBookingsPage.css';
 import type { AdminBooking } from '../services/adminService';
 import { downloadBookingPdf, fetchBookingsByDate } from '../services/adminService';
+import AdminBookingEditor from './AdminBookingEditor';
 
 interface AdminBookingsPageProps {
   onBack: () => void;
@@ -55,6 +56,8 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [hasFetched, setHasFetched] = useState<boolean>(false);
+  const [editorBookingId, setEditorBookingId] = useState<number | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
 
   const friendlyDate = useMemo(
     () => formatDisplayDate(selectedDate),
@@ -98,6 +101,22 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
           : 'Unable to download booking summary.'
       );
     }
+  };
+
+  const handleOpenEditor = (bookingId: number) => {
+    setEditorBookingId(bookingId);
+    setIsEditorOpen(true);
+  };
+
+  const handleCloseEditor = () => {
+    setIsEditorOpen(false);
+    setEditorBookingId(null);
+  };
+
+  const handleBookingUpdated = (updatedBooking: AdminBooking) => {
+    setBookings((prev) =>
+      prev.map((booking) => (booking.id === updatedBooking.id ? updatedBooking : booking))
+    );
   };
 
   return (
@@ -170,7 +189,7 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
                 </div>
                 <div className="booking-field">
                   <span className="label">Bounce House</span>
-                  <span>{booking.bounce_house_type}</span>
+                  <span>{booking.bounce_house_type || '—'}</span>
                 </div>
                 <div className="booking-field">
                   <span className="label">Email</span>
@@ -181,12 +200,30 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
                   <span>{booking.customer_phone}</span>
                 </div>
                 <div className="booking-field">
+                  <span className="label">Delivery Window</span>
+                  <span>{booking.delivery_window || '—'}</span>
+                </div>
+                <div className="booking-field">
+                  <span className="label">Balance Due</span>
+                  <span>
+                    {booking.balance_due !== null && booking.balance_due !== undefined
+                      ? `$${Number(booking.balance_due).toFixed(2)}`
+                      : '—'}
+                  </span>
+                </div>
+                <div className="booking-field">
                   <span className="label">Submitted</span>
                   <span>{formatSubmittedAt(booking.created_at)}</span>
                 </div>
               </div>
 
               <footer className="booking-card-footer">
+                <button
+                  className="admin-edit-button"
+                  onClick={() => handleOpenEditor(booking.id)}
+                >
+                  ✏️ Edit Details
+                </button>
                 <button
                   className="admin-pdf-button"
                   onClick={() => handleDownloadPdf(booking.id)}
@@ -198,6 +235,12 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
           ))}
         </div>
       )}
+      <AdminBookingEditor
+        bookingId={editorBookingId}
+        isOpen={isEditorOpen}
+        onClose={handleCloseEditor}
+        onBookingUpdated={handleBookingUpdated}
+      />
     </div>
   );
 };

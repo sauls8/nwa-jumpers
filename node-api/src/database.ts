@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3';
 import { promisify } from 'util';
 import path from 'path';
-import { createBookingsTableQuery } from './models/bookingSchema';
+import { createBookingItemsTableQuery, createBookingsTableQuery } from './models/bookingSchema';
 
 /**
  * Database Configuration
@@ -31,6 +31,7 @@ const dbAll = promisify(db.all.bind(db));
 export const initializeDatabase = async (): Promise<void> => {
   try {
     await dbRun(createBookingsTableQuery);
+    await dbRun(createBookingItemsTableQuery);
     console.log('✅ Database tables initialized');
   } catch (error) {
     console.error('❌ Error initializing database:', error);
