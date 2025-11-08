@@ -10,6 +10,8 @@ export const createBookingsTableQuery = `
     customer_email TEXT NOT NULL,
     customer_phone TEXT NOT NULL,
     event_date TEXT NOT NULL,
+    event_start_time TEXT NOT NULL,
+    event_end_time TEXT NOT NULL,
     bounce_house_type TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )
@@ -36,6 +38,8 @@ export interface Booking {
   customer_email: string;
   customer_phone: string;
   event_date: string;
+  event_start_time: string;
+  event_end_time: string;
   bounce_house_type: string;
   created_at?: string;
 }

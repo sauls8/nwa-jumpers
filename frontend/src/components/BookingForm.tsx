@@ -9,6 +9,8 @@ interface BookingData {
   customer_email: string;
   customer_phone: string;
   event_date: string;
+  event_start_time: string;
+  event_end_time: string;
   bounce_house_type: string;
 }
 
@@ -17,16 +19,6 @@ interface BookingFormProps {
   selectedInflatable?: Inflatable | null;
 }
 
-const BOUNCE_HOUSE_OPTIONS = [
-  'Castle Bounce House',
-  'Princess Castle',
-  'Superhero Theme',
-  'Sports Arena',
-  'Obstacle Course',
-  'Water Slide Combo',
-  'Toddler Bounce House',
-  'Custom Theme'
-];
 
 const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInflatable }) => {
   const [formData, setFormData] = useState<BookingData>({
@@ -34,6 +26,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
     customer_email: '',
     customer_phone: '',
     event_date: '',
+    event_start_time: '',
+    event_end_time: '',
     bounce_house_type: selectedInflatable?.name || ''
   });
 
@@ -83,6 +77,14 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
       setError('Event date is required');
       return false;
     }
+    if (!formData.event_start_time) {
+      setError('Event start time is required');
+      return false;
+    }
+    if (!formData.event_end_time) {
+      setError('Event end time is required');
+      return false;
+    }
     if (!formData.bounce_house_type) {
       setError('Please select a bounce house type');
       return false;
@@ -118,6 +120,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
           customer_email: '',
           customer_phone: '',
           event_date: '',
+          event_start_time: '',
+          event_end_time: '',
           bounce_house_type: ''
         });
       } else {
@@ -175,6 +179,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
       <form onSubmit={handleSubmit} className="booking-form">
         {error && <div className="error-message">{error}</div>}
         
+        
+        
         <div className="form-group">
           <label htmlFor="customer_name">Full Name *</label>
           <input
@@ -213,7 +219,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             disabled={isLoading}
           />
         </div>
-
         <div className="form-group">
           <label htmlFor="event_date">Event Date *</label>
           <div className="date-input-container">
@@ -250,6 +255,32 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
         </div>
 
         <div className="form-group">
+          <label htmlFor="event_start_time">Event Start Time *</label>
+          <input
+            type="time"
+            id="event_start_time"
+            name="event_start_time"
+            value={formData.event_start_time}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="event_end_time">Event End Time *</label>
+          <input
+            type="time"
+            id="event_end_time"
+            name="event_end_time"
+            value={formData.event_end_time}
+            onChange={handleInputChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* <div className="form-group">
           <label htmlFor="bounce_house_type">Bounce House Type *</label>
           <select
             id="bounce_house_type"
@@ -266,7 +297,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
               </option>
             ))}
           </select>
-        </div>
+        </div> */}
 
         <button 
           type="submit" 

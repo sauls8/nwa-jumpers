@@ -43,13 +43,13 @@ router.get('/availability/:date', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     // Input validation
-    const { customer_name, customer_email, customer_phone, event_date, bounce_house_type } = req.body;
+    const { customer_name, customer_email, customer_phone, event_date, event_start_time, event_end_time, bounce_house_type } = req.body;
     
     // Check required fields
-    if (!customer_name || !customer_email || !customer_phone || !event_date || !bounce_house_type) {
+    if (!customer_name || !customer_email || !customer_phone || !event_date || !event_start_time || !event_end_time || !bounce_house_type) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Missing required fields. Please provide: customer_name, customer_email, customer_phone, event_date, bounce_house_type' 
+        message: 'Missing required fields. Please provide: customer_name, customer_email, customer_phone, event_date, event_start_time, event_end_time, bounce_house_type' 
       });
     }
     
@@ -64,8 +64,8 @@ router.post('/', async (req, res) => {
     
     // Insert booking into database
     const result = await database.instance.run(
-      'INSERT INTO bookings (customer_name, customer_email, customer_phone, event_date, bounce_house_type) VALUES (?, ?, ?, ?, ?)',
-      [customer_name, customer_email, customer_phone, event_date, bounce_house_type]
+      'INSERT INTO bookings (customer_name, customer_email, customer_phone, event_date, event_start_time, event_end_time, bounce_house_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [customer_name, customer_email, customer_phone, event_date, event_start_time, event_end_time, bounce_house_type]
     );
     
     // Return success response with booking ID
