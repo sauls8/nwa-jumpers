@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './BookingForm.css';
 import type { Inflatable } from '../data/inflatables';
+import type { CartItem } from '../types/cart';
 import Calendar from './Calendar';
 import { checkDateAvailability } from '../services/availabilityService';
 
@@ -17,10 +18,19 @@ interface BookingData {
 interface BookingFormProps {
   selectedCategory?: string;
   selectedInflatable?: Inflatable | null;
+  onAddToCart: (cartItem: CartItem) => void;
+  onProceedToCheckout: () => void;
+  onMakeAnotherBooking: () => void;
 }
 
 
-const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInflatable }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ 
+  selectedCategory, 
+  selectedInflatable,
+  onAddToCart,
+  onProceedToCheckout,
+  onMakeAnotherBooking
+}) => {
   const [formData, setFormData] = useState<BookingData>({
     customer_name: '',
     customer_email: '',
@@ -31,7 +41,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
     bounce_house_type: selectedInflatable?.name || ''
   });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string>('');
   const [showCalendar, setShowCalendar] = useState(false);
@@ -92,7 +101,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -100,51 +109,55 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
       return;
     }
 
-    setIsLoading(true);
-    
-    try {
-      const response = await fetch('http://localhost:3001/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setIsSuccess(true);
-        setFormData({
-          customer_name: '',
-          customer_email: '',
-          customer_phone: '',
-          event_date: '',
-          event_start_time: '',
-          event_end_time: '',
-          bounce_house_type: ''
-        });
-      } else {
-        setError(result.message || 'Failed to create booking');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (!selectedInflatable) {
+      setError('Please select an inflatable');
+      return;
     }
+
+    // Add to cart instead of submitting directly
+    const cartItem: CartItem = {
+      id: `${selectedInflatable.id}-${Date.now()}`, // Unique ID
+      inflatable: selectedInflatable,
+      bookingData: { ...formData }
+    };
+
+    onAddToCart(cartItem);
+    setIsSuccess(true);
+    
+    // Reset form but keep customer info for convenience
+    setFormData({
+      customer_name: formData.customer_name, // Keep name
+      customer_email: formData.customer_email, // Keep email
+      customer_phone: formData.customer_phone, // Keep phone
+      event_date: formData.event_date, // Keep date
+      event_start_time: '',
+      event_end_time: '',
+      bounce_house_type: ''
+    });
   };
 
   if (isSuccess) {
     return (
       <div className="booking-success">
-        <h3>🎉 Booking Submitted Successfully!</h3>
-        <p>Thank you for choosing NWA Jumpers! We'll contact you soon to confirm your booking.</p>
-        <button 
-          onClick={() => setIsSuccess(false)}
-          className="btn btn-secondary"
-        >
-          Make Another Booking
-        </button>
+        <h3>✅ Added to Cart!</h3>
+        <p>Your booking has been added to your cart. Would you like to add another booking or proceed to checkout?</p>
+        <div className="success-actions">
+          <button 
+            onClick={() => {
+              setIsSuccess(false);
+              onMakeAnotherBooking();
+            }}
+            className="btn btn-secondary"
+          >
+            Make Another Booking
+          </button>
+          <button 
+            onClick={onProceedToCheckout}
+            className="btn btn-primary"
+          >
+            Proceed to Checkout
+          </button>
+        </div>
       </div>
     );
   }
@@ -190,7 +203,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.customer_name}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           />
         </div>
 
@@ -203,7 +215,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.customer_email}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           />
         </div>
 
@@ -216,7 +227,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.customer_phone}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           />
         </div>
         <div className="form-group">
@@ -232,26 +242,24 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
               placeholder="Click to select date"
               className="date-input"
               required
-              disabled={isLoading}
             />
             <button
               type="button"
               onClick={handleCalendarToggle}
               className="calendar-toggle-btn"
-              disabled={isLoading}
             >
               📅
             </button>
-          </div>
           {showCalendar && (
             <div className="calendar-container">
               <Calendar
                 selectedDate={formData.event_date}
                 onDateSelect={handleDateSelect}
-                onAvailabilityCheck={checkDateAvailability}
+                onAvailabilityCheck={(date: string) => checkDateAvailability(date, formData.bounce_house_type)}
               />
             </div>
           )}
+          </div>
         </div>
 
         <div className="form-group">
@@ -263,7 +271,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.event_start_time}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           />
         </div>
 
@@ -276,7 +283,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.event_end_time}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           />
         </div>
 
@@ -288,7 +294,6 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
             value={formData.bounce_house_type}
             onChange={handleInputChange}
             required
-            disabled={isLoading}
           >
             <option value="">Select a bounce house...</option>
             {BOUNCE_HOUSE_OPTIONS.map(option => (
@@ -302,9 +307,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ selectedCategory, selectedInf
         <button 
           type="submit" 
           className="btn btn-primary"
-          disabled={isLoading}
         >
-          {isLoading ? 'Submitting...' : 'Submit Booking'}
+          Add to Cart
         </button>
       </form>
     </div>

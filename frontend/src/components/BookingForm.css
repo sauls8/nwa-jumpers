@@ -90,65 +90,71 @@
 .date-input-container {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .date-input {
   flex: 1;
   padding: 0.75rem;
-  border: 2px solid #374151;
-  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px 0 0 8px;
   font-size: 1rem;
-  background: #1f2937;
-  color: #f9fafb;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .date-input:hover {
   border-color: #646cff;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .date-input:focus {
   outline: none;
   border-color: #646cff;
+  background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
 }
 
 .calendar-toggle-btn {
-  background: #374151;
-  border: 2px solid #374151;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-left: none;
   border-radius: 0 8px 8px 0;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   font-size: 1.25rem;
-  transition: all 0.2s ease;
-  margin-left: -2px;
-  color: #d1d5db;
+  transition: all 0.3s ease;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
 }
 
 .calendar-toggle-btn:hover {
-  background: #4b5563;
+  background: rgba(255, 255, 255, 0.2);
   border-color: #646cff;
   color: #f9fafb;
 }
 
 .calendar-toggle-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .calendar-container {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 0.5rem);
   left: 0;
   right: 0;
   z-index: 1000;
-  margin-top: 0.5rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   overflow: hidden;
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 /* Mobile responsiveness for selected inflatable */
@@ -176,6 +182,7 @@
     width: 90vw;
     max-width: 400px;
     z-index: 1001;
+    right: auto;
   }
 }
 
@@ -302,6 +309,18 @@
 .booking-success p {
   margin-bottom: 1.5rem;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.success-actions .btn {
+  min-width: 180px;
 }
 
 /* Responsive Design */

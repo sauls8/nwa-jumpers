@@ -4,14 +4,17 @@ import CategoriesPage from './components/CategoriesPage';
 import InflatablesPage from './components/InflatablesPage';
 import BookingForm from './components/BookingForm';
 import AdminBookingsPage from './components/AdminBookingsPage';
+import QuotePage from './components/QuotePage';
 import type { Inflatable } from './data/inflatables';
+import type { CartItem } from './types/cart';
 
-type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin';
+type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin' | 'quote';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>('categories');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedInflatable, setSelectedInflatable] = useState<Inflatable | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -40,6 +43,24 @@ function App() {
 
   const handleBackFromAdmin = () => {
     handleBackToCategories();
+  };
+
+  const handleAddToCart = (cartItem: CartItem) => {
+    setCart(prev => [...prev, cartItem]);
+  };
+
+  const handleProceedToCheckout = () => {
+    setCurrentPage('quote');
+  };
+
+  const handleMakeAnotherBooking = () => {
+    setCurrentPage('categories');
+    setSelectedCategory('');
+    setSelectedInflatable(null);
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
   };
 
   return (
@@ -75,12 +96,23 @@ function App() {
                 ← Back to Customer View
               </button>
             ) : (
-              <button 
-                className="admin-button"
-                onClick={handleNavigateToAdmin}
-              >
-                Admin Dashboard
-              </button>
+              <>
+                {cart.length > 0 && (
+                  <button 
+                    className="cart-badge"
+                    onClick={handleProceedToCheckout}
+                    title="View cart"
+                  >
+                    {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                  </button>
+                )}
+                <button 
+                  className="admin-button"
+                  onClick={handleNavigateToAdmin}
+                >
+                  Admin Dashboard
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -101,6 +133,16 @@ function App() {
           <BookingForm 
             selectedCategory={selectedCategory}
             selectedInflatable={selectedInflatable}
+            onAddToCart={handleAddToCart}
+            onProceedToCheckout={handleProceedToCheckout}
+            onMakeAnotherBooking={handleMakeAnotherBooking}
+          />
+        )}
+        {currentPage === 'quote' && (
+          <QuotePage 
+            cart={cart}
+            onBackToCategories={handleBackToCategories}
+            onClearCart={handleClearCart}
           />
         )}
         {currentPage === 'admin' && (

@@ -83,6 +83,32 @@ html, body {
   transform: translateY(-1px);
 }
 
+.cart-badge {
+  background: linear-gradient(135deg, #646cff, #535bf2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+  display: flex;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 1rem;
+}
+
+.cart-badge:hover {
+  background: linear-gradient(135deg, #535bf2, #4338ca);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
+}
+
+.cart-badge:active {
+  transform: translateY(0);
+}
+
 /* Main Content */
 .app-main {
   width: 100%;

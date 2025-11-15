@@ -1,3 +1,5 @@
+import { getApiUrl } from '../config/api';
+
 export interface AdminBooking {
   id: number;
   customer_name: string;
@@ -45,7 +47,7 @@ interface BookingsByDateResponse {
   bookings: AdminBooking[];
 }
 
-const API_BASE_URL = 'http://localhost:3001/api/bookings';
+const API_BASE_URL = getApiUrl('bookings');
 
 export const fetchBookingsByDate = async (date: string): Promise<AdminBooking[]> => {
   const response = await fetch(`${API_BASE_URL}/by-date/${encodeURIComponent(date)}`);

@@ -1,0 +1,286 @@
+.quote-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #f9fafb;
+}
+
+.quote-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.quote-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.quote-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: 12px;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.empty-cart h2 {
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.empty-cart p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2rem;
+}
+
+.customer-info-section,
+.bookings-section,
+.quote-summary {
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.customer-info-section h2,
+.bookings-section h2,
+.quote-summary h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.customer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-value {
+  color: #fff;
+}
+
+.detail-value.price {
+  font-weight: 700;
+  color: #646cff;
+  font-size: 1.1rem;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.booking-item {
+  background: rgba(17, 24, 39, 0.6);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.booking-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(100, 108, 255, 0.3);
+}
+
+.booking-number {
+  font-weight: 700;
+  color: #646cff;
+  font-size: 1.1rem;
+}
+
+.booking-date {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+.booking-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inflatable-info {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.inflatable-thumbnail {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid rgba(100, 108, 255, 0.3);
+}
+
+.inflatable-details h3 {
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.inflatable-description {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.inflatable-specs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.inflatable-specs span {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.booking-details {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  font-size: 1.1rem;
+}
+
+.summary-row.total {
+  border-top: 2px solid rgba(100, 108, 255, 0.3);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #646cff;
+}
+
+.quote-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.quote-note {
+  width: 100%;
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+}
+
+.quote-note p {
+  margin: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #646cff, #535bf2);
+  color: white;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #535bf2, #4338ca);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .quote-page {
+    padding: 1rem;
+  }
+
+  .quote-header h1 {
+    font-size: 2rem;
+  }
+
+  .inflatable-info {
+    flex-direction: column;
+  }
+
+  .inflatable-thumbnail {
+    width: 100%;
+    height: 200px;
+  }
+
+  .booking-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .quote-actions {
+    flex-direction: column;
+  }
+
+  .quote-actions .btn {
+    width: 100%;
+  }
+}
+

@@ -3,7 +3,7 @@
  * Handles checking date availability with the backend API
  */
 
-const API_BASE_URL = 'http://localhost:3001/api';
+import { API_BASE_URL } from '../config/api';
 
 export interface AvailabilityResponse {
   date: string;
@@ -14,10 +14,17 @@ export interface AvailabilityResponse {
 
 /**
  * Check if a specific date is available for booking
+ * @param date - Date string in YYYY-MM-DD format
+ * @param inflatableType - Optional inflatable type to check availability for
  */
-export const checkDateAvailability = async (date: string): Promise<boolean> => {
+export const checkDateAvailability = async (date: string, inflatableType?: string): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/bookings/availability/${date}`);
+    let url = `${API_BASE_URL}/bookings/availability/${date}`;
+    if (inflatableType) {
+      url += `?inflatable=${encodeURIComponent(inflatableType)}`;
+    }
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

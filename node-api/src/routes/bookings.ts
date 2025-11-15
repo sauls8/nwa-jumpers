@@ -428,13 +428,27 @@ router.get('/by-date/:date', async (req, res) => {
   }
 });
 
-// New endpoint to check availability for a specific date
+// New endpoint to check availability for a specific date and inflatable type
 router.get('/availability/:date', async (req, res) => {
   try {
     const { date } = req.params;
+    const { inflatable } = req.query; // Optional query parameter for inflatable type
+    
+    let query: string;
+    let params: unknown[];
+    
+    if (inflatable && typeof inflatable === 'string') {
+      // Check availability for specific inflatable type
+      query = 'SELECT * FROM bookings WHERE event_date = ? AND bounce_house_type = ?';
+      params = [date, inflatable];
+    } else {
+      // Check availability for any booking on this date (backward compatible)
+      query = getBookingsByDateQuery;
+      params = [date];
+    }
     
     const bookings = await new Promise<Booking[]>((resolve, reject) => {
-      database.instance.all(getBookingsByDateQuery, [date], (err, rows) => {
+      database.instance.all(query, params, (err, rows) => {
         if (err) reject(err);
         else resolve(rows as Booking[]);
       });

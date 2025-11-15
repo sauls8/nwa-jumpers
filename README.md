@@ -1,23 +1,42 @@
 # NWA Jumpers - Bounce House Booking System
 
-A **prototype** full-stack booking system for bounce house rentals built with React, TypeScript, Node.js, Express, and SQLite.
+A full-stack booking system for bounce house rentals built with React, TypeScript, Node.js, Express, and SQLite.
 
-> **🚧 This is a prototype/demo project** - The booking form and features are subject to change as we iterate and improve the system.
+## Overview
 
-## 🎯 Current Status
+This project is a complete booking management system that allows customers to browse inflatables, check availability, and create bookings. It includes an admin dashboard for managing bookings, generating PDF quotes, and tracking inventory.
 
-**✅ Core Prototype Functionality Complete**
-- Responsive categories grid (4 live categories + 4 placeholders)
+## Current Status
+
+**Core Functionality**
+- Responsive categories grid with inflatable browsing
 - Category → Inflatable → Booking flow with pre-filled selections
-- Dark-mode UI across categories, inflatables, booking form, and admin tools
-- Integrated availability calendar pulling live data from SQLite
-- Booking form captures event date plus start/end times with validation
-- Admin dashboard filters bookings by date and exports PDF summaries
-- Backend REST API with SQLite persistence, availability checks, and PDF generation
+- Dark-mode UI across all components
+- Integrated availability calendar with real-time booking checks
+- Booking form with date/time selection and validation
+- Shopping cart system for multiple bookings
+- Quote generation with pricing breakdown
+- Admin dashboard with date filtering and PDF export
+- Backend REST API with SQLite persistence
+- Inflatable-specific availability checking
 
-**🛠️ Entering Refinement Phase**
-- Next focus areas: data accuracy, copy/design polish, admin UX, and deployment readiness
-- See “🔍 Refinement Roadmap” for detailed tasks and known gaps
+**Deployment Ready**
+- Environment variable configuration for production
+- CORS configured for production domains
+- Production build scripts ready
+- See `DEPLOYMENT.md` for full deployment guide
+- See `QUICK_START.md` for fast-track deployment
+
+**Inventory Import System**
+- Excel-to-TypeScript conversion script included
+- See `INVENTORY_IMPORT_GUIDE.md` for importing real inventory data
+- Template and step-by-step instructions provided
+
+**Ongoing Improvements**
+- Inventory data import and catalog updates
+- Enhanced error handling and validation
+- Admin authentication and access control
+- Additional export formats (CSV, email summaries)
 
 ## Project Structure
 
@@ -40,9 +59,15 @@ nwa-jumpers/
    ```
    PORT=3001
    NODE_ENV=development
+   FRONTEND_URL=http://localhost:5173
    ```
 
-3. Start the development server:
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
@@ -56,64 +81,47 @@ nwa-jumpers/
    cd frontend
    ```
 
-2. Start the development server:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file with:
+   ```
+   VITE_API_BASE_URL=http://localhost:3001/api
+   ```
+
+4. Start the development server:
    ```bash
    npm run dev
    ```
    
    The frontend will run on `http://localhost:5173`
 
-## Development Roadmap
-
-### ✅ Phase 1: Static Prototype (COMPLETED)
-- [x] Project skeleton (React + Vite + TypeScript frontend, Express + TypeScript backend)
-- [x] Git workflow established, `.gitignore` configured
-- [x] SQLite connection & bookings table bootstrap
-- [x] Health check endpoint and basic CRUD wiring
-- [x] Categories grid (4 live + 4 “Coming Soon”) with responsive styling
-- [x] Inflatables dataset and reusable component structure
-- [x] Dark-mode visual baseline
-
-### ✅ Phase 2: Interactive Features (COMPLETED)
-- [x] Category → Inflatable → Booking navigation & back buttons
-- [x] Booking form pre-populates selected inflatable
-- [x] Form validation + success/failure feedback
-- [x] End-to-end API integration with fetch + async handling
-
-### ✅ Phase 3: Calendar Integration (COMPLETED)
-- [x] Interactive calendar component with month navigation
-- [x] Real-time availability checks (booked = red, available = green)
-- [x] Calendar-driven date selection inside the booking form
-- [x] Dark-mode styling + mobile responsiveness
-
-### ✅ Phase 4: Admin Features (COMPLETED)
-- [x] Admin dashboard view with date picker & booking count summary
-- [x] Filter bookings by event date (real data from API)
-- [x] PDF summary export via backend `pdfkit`
-- [x] Booking form captures event start/end times
-- [x] Availability endpoint and admin dashboard handle legacy records without times
-
-### 🔍 Refinement Roadmap (Week 3+)
-- [ ] Replace placeholder copy/images with real catalog content
-- [ ] Add admin authentication / access control
-- [ ] Improve error states (network failures, empty results, validation hints)
-- [ ] Allow admin to refresh bookings without toggling date (manual refresh button or auto polling)
-- [ ] Surface booking source (web/phone/manual) & internal notes field
-- [ ] CSV export or email summary for daily schedule
-- [ ] Deployment checklist (env handling, build scripts, hosting strategy)
-
-### 🚧 Future Enhancements (Wish List)
-- [ ] Payment integration & pricing calculator
-- [ ] Customer booking confirmation emails/SMS
-- [ ] Multi-day rentals & delivery logistics tracking
-- [ ] Tailwind or component library adoption once UI stabilizes
-
 ## Tech Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Backend**: Node.js, Express, TypeScript
 - **Database**: SQLite3
-- **Styling**: CSS (Tailwind coming in Week 2)
+- **Styling**: CSS with responsive design
+- **PDF Generation**: PDFKit
+
+## Features
+
+### Customer Features
+- Browse inflatables by category
+- View detailed inflatable information (pricing, capacity, dimensions)
+- Interactive calendar with real-time availability checking
+- Multi-item shopping cart
+- Quote generation with tax calculation
+- Form validation and error handling
+
+### Admin Features
+- View all bookings by date
+- Edit booking details and pricing
+- Generate PDF rental agreements
+- Track booking items and line items
+- Internal notes and customer information management
 
 ## Database Schema
 
@@ -186,27 +194,20 @@ CREATE TABLE booking_items (
   - Response: `{ "status": "ok", "message": "NWA Jumpers API is running" }`
 
 ### Bookings API
-- **GET** `http://localhost:3001/api/bookings` - Get all bookings (ordered by event date)
-- **POST** `http://localhost:3001/api/bookings` - Create new booking (requires event start/end time)
-- **GET** `http://localhost:3001/api/bookings/availability/:date` - Check if specific date has any bookings
-  - Example: `GET /api/bookings/availability/2025-10-15`
-  - Response: `{ "date": "2025-10-15", "isAvailable": true, "bookings": 0, "message": "Date is available" }`
-- **GET** `http://localhost:3001/api/bookings/by-date/:date` - Admin endpoint to fetch bookings for a date
-  - Example: `GET /api/bookings/by-date/2025-10-31`
-  - Response: `{ "date": "...", "bookings": [ { ...booking fields... } ] }`
-- **GET** `http://localhost:3001/api/bookings/:id` - Fetch a single booking with admin fields and line items
-- **PUT** `http://localhost:3001/api/bookings/:id` - Update booking details, cost breakdown, and line items
-- **GET** `http://localhost:3001/api/bookings/:id/pdf` - Download printable PDF summary for a booking
-  - Response headers: `Content-Type: application/pdf`, attachment filename `booking-<id>.pdf`
+- **GET** `/api/bookings` - Get all bookings (ordered by event date)
+- **POST** `/api/bookings` - Create new booking
+- **GET** `/api/bookings/availability/:date?inflatable=type` - Check availability for a date and optional inflatable type
+  - Example: `GET /api/bookings/availability/2025-10-15?inflatable=Princess%20Castle`
+  - Response: `{ "date": "2025-10-15", "isAvailable": true, "bookingsCount": 0, "message": "Date is available" }`
+- **GET** `/api/bookings/by-date/:date` - Admin endpoint to fetch bookings for a date
+- **GET** `/api/bookings/:id` - Fetch a single booking with admin fields and line items
+- **PUT** `/api/bookings/:id` - Update booking details, cost breakdown, and line items
+- **GET** `/api/bookings/:id/pdf` - Download printable PDF summary for a booking
 
-### Admin UI Quick Start
-- Launch both dev servers (`cd node-api && npm run dev`, `cd frontend && npm run dev -- --host`)
-- Visit `http://localhost:5173`, click **Admin Dashboard**
-- Pick a date to load bookings, download PDFs via “⬇ Download PDF”
-- Create a new booking from the customer flow and toggle the date picker to refresh
+## Development Notes
 
-### Manual Database Upgrade (for existing clones)
-Run the following SQL statements against `node-api/bookings.db` to add the new admin fields and the line items table (skip any columns that already exist):
+### Manual Database Upgrade
+If you need to add new columns to existing databases, run the following SQL statements (skip any columns that already exist):
 
 ```sql
 ALTER TABLE bookings ADD COLUMN organization_name TEXT;
@@ -241,12 +242,17 @@ CREATE TABLE IF NOT EXISTS booking_items (
 );
 ```
 
-> ℹ️ SQLite does not support `IF NOT EXISTS` on `ADD COLUMN`, so you can ignore the “duplicate column name” error if a column is already present.
+Note: SQLite does not support `IF NOT EXISTS` on `ADD COLUMN`, so you can ignore "duplicate column name" errors if a column is already present.
 
-### Known Gaps During Refinement
-- Legacy seed bookings lack event start/end times (displayed as “Time TBD” until updated)
-- No authentication separating admin/customer views
-- No direct way to refresh admin data without touching the date picker
-- Deployment pipeline & environment configs still local-only
-- Test coverage limited to manual end-to-end checks
+## Future Enhancements
 
+- Payment integration and pricing calculator
+- Customer booking confirmation emails/SMS
+- Multi-day rentals & delivery logistics tracking
+- Enhanced admin authentication and role management
+- Automated inventory management
+- Advanced reporting and analytics
+
+## License
+
+ISC
