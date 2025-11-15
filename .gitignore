@@ -20,3 +20,10 @@ Thumbs.db
 # IDE/editor files
 .vscode/
 *.iml
+
+# Documentation (keep local, don't commit)
+DEPLOYMENT.md
+QUICK_START.md
+INVENTORY_IMPORT_GUIDE.md
+INVENTORY_QUICK_REFERENCE.md
+UX_TESTING_CHECKLIST.md

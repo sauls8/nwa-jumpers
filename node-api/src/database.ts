@@ -14,9 +14,9 @@ const DB_PATH = path.join(__dirname, '..', 'bookings.db');
 // Create SQLite database instance
 const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
-    console.error('❌ Error connecting to database:', err.message);
+    console.error('Error connecting to database:', err.message);
   } else {
-    console.log('📦 Connected to SQLite database');
+    console.log('Connected to SQLite database');
   }
 });
 
@@ -32,9 +32,9 @@ export const initializeDatabase = async (): Promise<void> => {
   try {
     await dbRun(createBookingsTableQuery);
     await dbRun(createBookingItemsTableQuery);
-    console.log('✅ Database tables initialized');
+    console.log('Database tables initialized');
   } catch (error) {
-    console.error('❌ Error initializing database:', error);
+    console.error('Error initializing database:', error);
     throw error;
   }
 };

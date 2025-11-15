@@ -24,12 +24,9 @@ This project is a complete booking management system that allows customers to br
 - Environment variable configuration for production
 - CORS configured for production domains
 - Production build scripts ready
-- See `DEPLOYMENT.md` for full deployment guide
-- See `QUICK_START.md` for fast-track deployment
 
 **Inventory Import System**
 - Excel-to-TypeScript conversion script included
-- See `INVENTORY_IMPORT_GUIDE.md` for importing real inventory data
 - Template and step-by-step instructions provided
 
 **Ongoing Improvements**
