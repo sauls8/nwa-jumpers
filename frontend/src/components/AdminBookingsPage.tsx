@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import './AdminBookingsPage.css';
 import type { AdminBooking } from '../services/adminService';
-import { downloadBookingPdf, fetchBookingsByDate } from '../services/adminService';
+import { downloadBookingPdf, fetchBookingsByDate, fetchDatesWithBookings } from '../services/adminService';
 import AdminBookingEditor from './AdminBookingEditor';
+import Calendar from './Calendar';
 
 interface AdminBookingsPageProps {
   onBack: () => void;
@@ -50,20 +51,40 @@ const formatSubmittedAt = (timestamp?: string): string => {
 const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [datesWithBookings, setDatesWithBookings] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [hasFetched, setHasFetched] = useState<boolean>(false);
   const [editorBookingId, setEditorBookingId] = useState<number | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+  const [showCalendar, setShowCalendar] = useState<boolean>(true);
 
   const friendlyDate = useMemo(
     () => formatDisplayDate(selectedDate),
     [selectedDate]
   );
 
+  // Load dates with bookings on mount
+  useEffect(() => {
+    const loadDatesWithBookings = async () => {
+      try {
+        const dates = await fetchDatesWithBookings();
+        setDatesWithBookings(dates);
+      } catch (err) {
+        console.error('Error loading dates with bookings:', err);
+      }
+    };
+
+    void loadDatesWithBookings();
+  }, []);
+
+  // Load bookings when date is selected
   useEffect(() => {
     const loadBookings = async () => {
       if (!selectedDate) {
@@ -91,6 +112,18 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
     void loadBookings();
   }, [selectedDate]);
 
+  // Refresh dates with bookings after booking is updated
+  const handleBookingUpdated = (updatedBooking: AdminBooking) => {
+    setBookings((prev) =>
+      prev.map((booking) => (booking.id === updatedBooking.id ? updatedBooking : booking))
+    );
+    
+    // Refresh dates with bookings
+    fetchDatesWithBookings()
+      .then(setDatesWithBookings)
+      .catch(console.error);
+  };
+
   const handleDownloadPdf = async (bookingId: number) => {
     try {
       await downloadBookingPdf(bookingId);
@@ -113,10 +146,9 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
     setEditorBookingId(null);
   };
 
-  const handleBookingUpdated = (updatedBooking: AdminBooking) => {
-    setBookings((prev) =>
-      prev.map((booking) => (booking.id === updatedBooking.id ? updatedBooking : booking))
-    );
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
+    setShowCalendar(false); // Hide calendar and show bookings when date is clicked
   };
 
   return (
@@ -132,21 +164,51 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
       </div>
 
       <section className="admin-controls">
-        <div className="control-group">
-          <label htmlFor="admin-date-picker">Select Date</label>
-          <input
-            id="admin-date-picker"
-            type="date"
-            value={selectedDate}
-            onChange={(event) => setSelectedDate(event.target.value)}
-            max="9999-12-31"
-          />
+        <div className="admin-view-toggle">
+          <button
+            className={`toggle-btn ${showCalendar ? 'active' : ''}`}
+            onClick={() => setShowCalendar(true)}
+          >
+            📅 Calendar View
+          </button>
+          <button
+            className={`toggle-btn ${!showCalendar ? 'active' : ''}`}
+            onClick={() => setShowCalendar(false)}
+          >
+            📋 Bookings List
+          </button>
         </div>
-        <div className="control-group summary">
-          <span className="control-label">Bookings Found</span>
-          <span className="control-value">{bookings.length}</span>
-        </div>
+        {!showCalendar && (
+          <div className="control-group">
+            <label htmlFor="admin-date-picker">Select Date</label>
+            <input
+              id="admin-date-picker"
+              type="date"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
+              max="9999-12-31"
+            />
+          </div>
+        )}
+        {!showCalendar && (
+          <div className="control-group summary">
+            <span className="control-label">Bookings Found</span>
+            <span className="control-value">{bookings.length}</span>
+          </div>
+        )}
       </section>
+
+      {showCalendar && (
+        <section className="admin-calendar-section">
+          <h3>Click a blue day to view bookings</h3>
+          <Calendar
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            datesWithBookings={datesWithBookings}
+            showBookingsOnly={true}
+          />
+        </section>
+      )}
 
       {isLoading && (
         <div className="admin-status">Loading bookings for {friendlyDate}...</div>

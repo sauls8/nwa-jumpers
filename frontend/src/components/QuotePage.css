@@ -193,12 +193,178 @@
   color: #646cff;
 }
 
+.submit-status {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+  text-align: center;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+.submit-status.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid #10b981;
+  color: #10b981;
+}
+
+.submit-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid #ef4444;
+  color: #ef4444;
+}
+
+.submit-status p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .quote-actions {
   display: flex;
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 2rem;
+}
+
+.quote-actions .btn-primary {
+  background: linear-gradient(135deg, #646cff, #535bf2);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+}
+
+.quote-actions .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #535bf2, #4338ca);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.4);
+}
+
+.quote-actions .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Event Info Section */
+.event-info-section {
+  background: rgba(100, 108, 255, 0.1);
+  border: 2px solid #646cff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.event-info-section h2 {
+  color: #646cff;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Quote Info Section */
+.quote-info-section {
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.quote-info-section h2 {
+  color: #f9fafb;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.quote-info-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.quote-info-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quote-info-form label {
+  color: #d1d5db;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.quote-info-form input[type="text"],
+.quote-info-form textarea {
+  padding: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f9fafb;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.quote-info-form input[type="text"]:focus,
+.quote-info-form textarea:focus {
+  outline: none;
+  border-color: #646cff;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.quote-info-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.quote-info-form input::placeholder,
+.quote-info-form textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.checkbox-group {
+  margin-top: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #646cff;
 }
 
 .quote-note {

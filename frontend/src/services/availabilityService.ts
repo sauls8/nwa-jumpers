@@ -18,24 +18,70 @@ export interface AvailabilityResponse {
  * @param inflatableType - Optional inflatable type to check availability for
  */
 export const checkDateAvailability = async (date: string, inflatableType?: string): Promise<boolean> => {
+  // Validate date format
+  if (!date || typeof date !== 'string') {
+    console.error('Invalid date provided to checkDateAvailability');
+    return false;
+  }
+
+  // Validate date is a valid date string
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    console.error('Invalid date format:', date);
+    return false;
+  }
+
   try {
     let url = `${API_BASE_URL}/bookings/availability/${date}`;
-    if (inflatableType) {
+    if (inflatableType && typeof inflatableType === 'string') {
       url += `?inflatable=${encodeURIComponent(inflatableType)}`;
     }
     
-    const response = await fetch(url);
+    // Use timeout with AbortController (Chrome-compatible)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 10000); // 10 second timeout
+    
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        cache: 'no-cache' // Chrome-specific: prevent caching issues
+      });
+      clearTimeout(timeoutId);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      throw fetchError;
+    }
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data: AvailabilityResponse = await response.json();
-    return data.isAvailable;
+    
+    // Validate response structure
+    if (typeof data === 'object' && 'isAvailable' in data) {
+      return Boolean(data.isAvailable);
+    }
+    
+    console.error('Invalid response structure from availability API');
+    return false;
   } catch (error) {
-    console.error('Error checking date availability:', error);
-    // Return true as fallback to allow booking attempts
-    return true;
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Availability check timed out');
+    } else {
+      console.error('Error checking date availability:', error);
+    }
+    return false; // Default to unavailable on error for safety
   }
 };
 

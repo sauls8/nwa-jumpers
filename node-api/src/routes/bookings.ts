@@ -405,6 +405,27 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Admin: get all dates that have bookings (for calendar highlighting)
+router.get('/dates-with-bookings', async (req, res) => {
+  try {
+    const dates = await new Promise<string[]>((resolve, reject) => {
+      database.instance.all(
+        'SELECT DISTINCT event_date FROM bookings WHERE event_date IS NOT NULL ORDER BY event_date ASC',
+        [],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve((rows as Array<{ event_date: string }>).map(row => row.event_date));
+        }
+      );
+    });
+
+    res.json({ dates });
+  } catch (error) {
+    console.error('Error fetching dates with bookings:', error);
+    res.status(500).json({ error: 'Failed to fetch dates with bookings' });
+  }
+});
+
 // Admin: get all bookings for a specific date
 router.get('/by-date/:date', async (req, res) => {
   try {
@@ -775,6 +796,134 @@ router.post('/', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Failed to create booking. Please try again.' 
+    });
+  }
+});
+
+// POST endpoint for creating a quote with multiple items
+router.post('/quote', async (req, res) => {
+  try {
+    const {
+      customer_name,
+      customer_email,
+      customer_phone,
+      event_date,
+      event_start_time,
+      event_end_time,
+      organization_name,
+      event_address,
+      event_surface,
+      event_is_indoor,
+      items, // Array of items: [{ product_name, quantity, unit_price, product_category }]
+      subtotal_amount,
+      tax_amount,
+      total_amount
+    } = req.body;
+
+    // Validate required fields
+    if (!customer_name || !customer_email || !customer_phone || !event_date || !event_start_time || !event_end_time) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: customer_name, customer_email, customer_phone, event_date, event_start_time, event_end_time'
+      });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one item is required'
+      });
+    }
+
+    // Validate email
+    if (!emailRegex.test(customer_email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
+
+    // Calculate totals if not provided
+    const calculatedSubtotal = subtotal_amount || items.reduce((sum, item) => {
+      const qty = Number(item.quantity || 1);
+      const price = Number(item.unit_price || 0);
+      return sum + (qty * price);
+    }, 0);
+
+    const calculatedTax = tax_amount || (calculatedSubtotal * 0.10); // 10% tax
+    const calculatedTotal = total_amount || (calculatedSubtotal + calculatedTax);
+
+    // Insert booking and get the booking ID
+    // Note: bounce_house_type is nullable in schema, but we'll set it to a default or first item name
+    const firstItemName = items.length > 0 ? items[0].product_name : 'Multiple Items';
+    
+    const bookingResult = await new Promise<{ lastID: number }>((resolve, reject) => {
+      database.instance.run(
+        `INSERT INTO bookings (
+          customer_name, customer_email, customer_phone,
+          event_date, event_start_time, event_end_time,
+          bounce_house_type,
+          organization_name, event_address, event_surface, event_is_indoor,
+          subtotal_amount, tax_amount, total_amount
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          customer_name.trim(),
+          customer_email.trim(),
+          customer_phone.trim(),
+          event_date,
+          event_start_time,
+          event_end_time,
+          firstItemName, // Set bounce_house_type to first item name or default
+          parseStringOrNull(organization_name),
+          parseStringOrNull(event_address),
+          parseStringOrNull(event_surface),
+          parseBooleanAsInt(event_is_indoor, null),
+          calculatedSubtotal,
+          calculatedTax,
+          calculatedTotal
+        ],
+        function(err) {
+          if (err) reject(err);
+          else resolve({ lastID: this.lastID });
+        }
+      );
+    });
+
+    const bookingId = bookingResult.lastID;
+
+    // Insert booking items
+    for (const item of items) {
+      const quantity = Number(item.quantity || 1);
+      const unitPrice = Number(item.unit_price || 0);
+      const totalPrice = quantity * unitPrice;
+
+      await runStatement(
+        `INSERT INTO booking_items (
+          booking_id, product_name, product_category,
+          quantity, unit_price, total_price
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          bookingId,
+          item.product_name || item.name || 'Unknown',
+          item.product_category || item.category || null,
+          quantity,
+          unitPrice,
+          totalPrice
+        ]
+      );
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Quote created successfully',
+      booking_id: bookingId
+    });
+
+  } catch (error) {
+    console.error('Error creating quote:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create quote. Please try again.'
     });
   }
 });

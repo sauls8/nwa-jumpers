@@ -86,9 +86,11 @@
 }
 
 .calendar-day.selected {
-  background: #646cff;
+  background: #9333ea !important; /* Purple for selected */
   color: white;
   font-weight: 600;
+  border: 2px solid #a855f7;
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.3);
 }
 
 .calendar-day.available {
@@ -102,11 +104,30 @@
   transform: scale(1.05);
 }
 
+/* For admin: days with bookings are blue */
 .calendar-day.booked {
-  background: #7f1d1d;
-  color: #fca5a5;
-  border: 2px solid #ef4444;
+  background: #1e40af; /* Blue for days with bookings */
+  color: #dbeafe;
+  border: 2px solid #3b82f6;
+  cursor: pointer; /* Allow clicking in admin mode */
+}
+
+.calendar-day.booked:hover {
+  background: #1e3a8a;
+  transform: scale(1.05);
+}
+
+/* For booking form: booked days are red and not clickable */
+.calendar-day.booked:not(.selected) {
   cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Admin mode: booked days are clickable */
+.calendar-day.booked.selected {
+  background: #9333ea !important; /* Purple when selected */
+  border-color: #a855f7;
+  cursor: pointer;
 }
 
 .calendar-day.disabled {
@@ -114,9 +135,15 @@
   opacity: 0.5;
 }
 
-.calendar-day:not(.disabled):not(.booked):not(.other-month):hover {
+.calendar-day:not(.disabled):not(.booked):not(.other-month):not(.selected):hover {
   background: #374151;
   transform: scale(1.05);
+}
+
+/* Grey for days without bookings (admin view) */
+.calendar-day:not(.booked):not(.selected):not(.today):not(.other-month) {
+  background: #374151;
+  color: #9ca3af;
 }
 
 /* Calendar Footer */

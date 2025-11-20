@@ -151,21 +151,52 @@
   font-weight: 500;
 }
 
-.select-button {
-  background: #646cff;
-  color: white;
-  text-align: center;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(10px);
+.card-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
-.inflatable-card:hover .select-button {
-  opacity: 1;
+.book-now-button {
+  flex: 1;
+  background: linear-gradient(135deg, #646cff, #535bf2);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+}
+
+.book-now-button:hover {
+  background: linear-gradient(135deg, #535bf2, #4338ca);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.4);
+}
+
+.book-now-button:active {
   transform: translateY(0);
+}
+
+.view-details-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #1f2937;
+  border: 2px solid #e5e7eb;
+  padding: 0.875rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-details-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #646cff;
+  color: #646cff;
 }
 
 /* Mobile responsiveness */
@@ -199,6 +230,18 @@
   .feature-tag {
     font-size: 0.7rem;
     padding: 0.2rem 0.6rem;
+  }
+  
+  .card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .book-now-button,
+  .view-details-button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
   }
 }
 

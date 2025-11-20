@@ -40,6 +40,50 @@
   border: 1px solid rgba(75, 85, 99, 0.4);
 }
 
+.admin-view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.toggle-btn {
+  background: rgba(55, 65, 81, 0.8);
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  color: #d1d5db;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(75, 85, 99, 0.8);
+  color: #f9fafb;
+}
+
+.toggle-btn.active {
+  background: #646cff;
+  border-color: #646cff;
+  color: white;
+  font-weight: 600;
+}
+
+.admin-calendar-section {
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(75, 85, 99, 0.4);
+}
+
+.admin-calendar-section h3 {
+  color: #f9fafb;
+  font-size: 1.25rem;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
 .control-group {
   display: flex;
   flex-direction: column;

@@ -60,6 +60,17 @@ export const fetchBookingsByDate = async (date: string): Promise<AdminBooking[]>
   return data.bookings ?? [];
 };
 
+export const fetchDatesWithBookings = async (): Promise<string[]> => {
+  const response = await fetch(`${API_BASE_URL}/dates-with-bookings`);
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch dates with bookings.');
+  }
+
+  const data = (await response.json()) as { dates: string[] };
+  return data.dates ?? [];
+};
+
 export const downloadBookingPdf = async (bookingId: number): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/${bookingId}/pdf`);
 

@@ -58,6 +58,114 @@ html, body {
   text-align: left;
 }
 
+.search-container {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+  margin: 0 1rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  background: rgba(31, 41, 55, 0.8);
+  color: #f9fafb;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #646cff;
+  background: rgba(31, 41, 55, 1);
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 1.1rem;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background: rgba(31, 41, 55, 0.98);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.search-result-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: rgba(100, 108, 255, 0.1);
+}
+
+.search-result-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.search-result-info {
+  flex: 1;
+  text-align: left;
+}
+
+.search-result-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #f9fafb;
+  font-size: 1rem;
+}
+
+.search-result-info p {
+  margin: 0 0 0.5rem 0;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.search-result-price {
+  color: #646cff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.search-no-results {
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+}
+
 .header-actions {
   display: flex;
   gap: 0.75rem;
@@ -143,12 +251,30 @@ html, body {
 @media (max-width: 768px) {
   .header-top {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .app-title {
     text-align: center;
     width: 100%;
+  }
+  
+  .search-container {
+    max-width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  .search-results {
+    max-height: 300px;
+  }
+  
+  .search-result-item {
+    padding: 0.75rem;
+  }
+  
+  .search-result-item img {
+    width: 60px;
+    height: 60px;
   }
 
   .header-actions {

@@ -6,12 +6,14 @@ interface InflatablesPageProps {
   categoryId: string;
   onInflatableSelect: (inflatable: Inflatable) => void;
   onBackToCategories: () => void;
+  onQuickBook?: (inflatable: Inflatable) => void;
 }
 
 const InflatablesPage: React.FC<InflatablesPageProps> = ({ 
   categoryId, 
   onInflatableSelect, 
-  onBackToCategories 
+  onBackToCategories,
+  onQuickBook
 }) => {
   const inflatables: Inflatable[] = inflatablesData.filter(inflatable => inflatable.category === categoryId);
   
@@ -80,8 +82,29 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
                 ))}
               </div>
               
-              <div className="select-button">
-                Select This Inflatable →
+              <div className="card-actions">
+                <button 
+                  className="book-now-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onQuickBook) {
+                      onQuickBook(inflatable);
+                    } else {
+                      onInflatableSelect(inflatable);
+                    }
+                  }}
+                >
+                  Book Now
+                </button>
+                <button 
+                  className="view-details-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onInflatableSelect(inflatable);
+                  }}
+                >
+                  View Details
+                </button>
               </div>
             </div>
           </div>
