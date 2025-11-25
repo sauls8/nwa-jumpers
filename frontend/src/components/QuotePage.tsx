@@ -7,24 +7,25 @@ interface QuotePageProps {
   cart: CartItem[];
   customerInfo: CustomerInfo | null;
   eventInfo: EventInfo | null; // Shared event date/time for all items
+  quoteInfo: QuoteInfo | null; // Quote info from order form (surface, notes, etc.)
   onBackToCategories: () => void;
   onClearCart: () => void;
 }
 
-const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, onBackToCategories, onClearCart }) => {
+const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, quoteInfo: propQuoteInfo, onBackToCategories, onClearCart }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
   }>({ type: null, message: '' });
 
-  // Additional quote information
-  const [quoteInfo, setQuoteInfo] = useState<QuoteInfo>({
+  // Use quote info from props (pre-filled from order form)
+  const quoteInfo = propQuoteInfo || {
     organization_name: '',
     event_address: '',
     event_surface: '',
     event_is_indoor: false
-  });
+  };
 
   // Use shared event info (all items use the same date/time)
   const eventDate = eventInfo?.event_date || '';
@@ -59,14 +60,6 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, on
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
-  };
-
-  const handleQuoteInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setQuoteInfo(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
   };
 
   const handleGenerateQuote = async () => {
@@ -176,6 +169,12 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, on
         <div className="customer-info-section">
           <h2>Customer Information</h2>
           <div className="customer-details">
+            {customerInfo.company_name && (
+              <div className="detail-row">
+                <span className="detail-label">Company:</span>
+                <span className="detail-value">{customerInfo.company_name}</span>
+              </div>
+            )}
             <div className="detail-row">
               <span className="detail-label">Name:</span>
               <span className="detail-value">{customerInfo.customer_name}</span>
@@ -188,6 +187,21 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, on
               <span className="detail-label">Phone:</span>
               <span className="detail-value">{customerInfo.customer_phone}</span>
             </div>
+            {customerInfo.street_address && (
+              <>
+                <div className="detail-row">
+                  <span className="detail-label">Address:</span>
+                  <span className="detail-value">{customerInfo.street_address}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">City, State, ZIP:</span>
+                  <span className="detail-value">
+                    {customerInfo.city}{customerInfo.city && customerInfo.state ? ', ' : ''}
+                    {customerInfo.state} {customerInfo.postal_code}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -209,59 +223,44 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, on
         </div>
       </div>
 
-      {/* Additional Quote Information */}
-      <div className="quote-info-section">
-        <h2>Additional Information (Optional)</h2>
-        <div className="quote-info-form">
-          <div className="form-group">
-            <label htmlFor="organization_name">Organization Name</label>
-            <input
-              type="text"
-              id="organization_name"
-              name="organization_name"
-              value={quoteInfo.organization_name || ''}
-              onChange={handleQuoteInfoChange}
-              placeholder="e.g., ABC School, XYZ Company"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="event_address">Event Address</label>
-            <textarea
-              id="event_address"
-              name="event_address"
-              value={quoteInfo.event_address || ''}
-              onChange={handleQuoteInfoChange}
-              placeholder="Enter the full address where the event will take place"
-              rows={3}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="event_surface">Surface Type</label>
-            <input
-              type="text"
-              id="event_surface"
-              name="event_surface"
-              value={quoteInfo.event_surface || ''}
-              onChange={handleQuoteInfoChange}
-              placeholder="e.g., Grass, Concrete, Indoor Floor"
-            />
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                name="event_is_indoor"
-                checked={quoteInfo.event_is_indoor || false}
-                onChange={handleQuoteInfoChange}
-              />
-              <span>This is an indoor event</span>
-            </label>
+      {/* Additional Quote Information - Display only (from order form) */}
+      {(quoteInfo.organization_name || quoteInfo.event_address || quoteInfo.event_surface || quoteInfo.notes || quoteInfo.overnight_pickup) && (
+        <div className="quote-info-section">
+          <h2>Additional Information</h2>
+          <div className="quote-info-display">
+            {quoteInfo.organization_name && (
+              <div className="detail-row">
+                <span className="detail-label">Organization:</span>
+                <span className="detail-value">{quoteInfo.organization_name}</span>
+              </div>
+            )}
+            {quoteInfo.event_address && (
+              <div className="detail-row">
+                <span className="detail-label">Event Address:</span>
+                <span className="detail-value">{quoteInfo.event_address}</span>
+              </div>
+            )}
+            {quoteInfo.event_surface && (
+              <div className="detail-row">
+                <span className="detail-label">Surface Type:</span>
+                <span className="detail-value">{quoteInfo.event_surface}</span>
+              </div>
+            )}
+            {quoteInfo.overnight_pickup && (
+              <div className="detail-row">
+                <span className="detail-label">Overnight Pickup:</span>
+                <span className="detail-value">Yes (+$75.00)</span>
+              </div>
+            )}
+            {quoteInfo.notes && (
+              <div className="detail-row">
+                <span className="detail-label">Notes:</span>
+                <span className="detail-value">{quoteInfo.notes}</span>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Bookings List */}
       <div className="bookings-section">

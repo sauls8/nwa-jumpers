@@ -10,6 +10,14 @@ export interface CustomerInfo {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  // Extended fields for order form
+  company_name?: string;
+  first_name?: string;
+  last_name?: string;
+  street_address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
 }
 
 export interface EventInfo {
@@ -23,5 +31,7 @@ export interface QuoteInfo {
   event_address?: string;
   event_surface?: string;
   event_is_indoor?: boolean;
+  overnight_pickup?: boolean;
+  notes?: string;
 }
 

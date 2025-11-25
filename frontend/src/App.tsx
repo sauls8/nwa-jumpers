@@ -5,10 +5,11 @@ import InflatablesPage from './components/InflatablesPage';
 import BookingForm from './components/BookingForm';
 import AdminBookingsPage from './components/AdminBookingsPage';
 import QuotePage from './components/QuotePage';
+import FAQPage from './components/FAQPage';
 import { inflatablesData, type Inflatable } from './data/inflatables';
-import type { CartItem, CustomerInfo, EventInfo } from './types/cart';
+import type { CartItem, CustomerInfo, EventInfo, QuoteInfo } from './types/cart';
 
-type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin' | 'quote';
+type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin' | 'quote' | 'faq';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>('categories');
@@ -17,6 +18,7 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [eventInfo, setEventInfo] = useState<EventInfo | null>(null); // Shared event date/time for all items
+  const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null); // Order form data (surface, notes, overnight, etc.)
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showSearchResults, setShowSearchResults] = useState(false);
 
@@ -69,9 +71,14 @@ function App() {
     setCustomerInfo(info);
   };
 
+  const handleSetQuoteInfo = (info: QuoteInfo) => {
+    setQuoteInfo(info);
+  };
+
   const handleClearCart = () => {
     setCart([]);
     setEventInfo(null); // Clear event info when clearing cart
+    setQuoteInfo(null); // Clear quote info when clearing cart
   };
 
   const handleProceedToCheckout = () => {
@@ -130,117 +137,74 @@ function App() {
     }
   };
 
+  const handleNavClick = (page: AppPage) => {
+    if (page === 'categories') {
+      handleBackToCategories();
+    } else if (page === 'inflatables') {
+      // If we have a selected category, show that category's inflatables
+      // Otherwise, go to categories first
+      if (selectedCategory) {
+        setCurrentPage('inflatables');
+      } else {
+        setCurrentPage('categories');
+      }
+    } else if (page === 'booking') {
+      // "BOOK IT" - if we have items in cart, go to quote, otherwise go to booking
+      if (cart.length > 0) {
+        setCurrentPage('quote');
+      } else if (selectedInflatable) {
+        setCurrentPage('booking');
+      } else {
+        // No item selected, go to categories to select one
+        setCurrentPage('categories');
+      }
+    }
+  };
+
   return (
     <div className="App">
       <header className="app-header">
-        <div className="header-top">
-          <div className="app-title">
-            <h1>🎪 NWA Jumpers</h1>
-            <p>Bounce House Rentals</p>
-          </div>
-          {currentPage !== 'admin' && currentPage !== 'quote' && (
-            <div className="search-container">
-              <input
-                type="text"
-                placeholder="Search inflatables..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="search-input"
-                onFocus={() => setShowSearchResults(searchQuery.length > 0)}
-                onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
-              />
-              <span className="search-icon">🔍</span>
-              {showSearchResults && searchResults.length > 0 && (
-                <div className="search-results">
-                  {searchResults.map((inflatable) => {
-                    if (!inflatable || !inflatable.id) return null;
-                    return (
-                      <div
-                        key={inflatable.id}
-                        className="search-result-item"
-                        onClick={() => handleSearchResultClick(inflatable)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleSearchResultClick(inflatable);
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                        aria-label={`Select ${inflatable.name}`}
-                      >
-                        <img 
-                          src={inflatable.image || ''} 
-                          alt={inflatable.name || 'Inflatable'} 
-                          onError={(e) => {
-                            // Fallback for broken images
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x80?text=Image';
-                          }}
-                        />
-                        <div className="search-result-info">
-                          <h4>{inflatable.name || 'Unnamed Inflatable'}</h4>
-                          <p>{inflatable.description || 'No description available'}</p>
-                          <span className="search-result-price">
-                            ${inflatable.price && typeof inflatable.price === 'number' ? inflatable.price.toFixed(2) : '0.00'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {showSearchResults && searchQuery.length > 0 && searchResults.length === 0 && (
-                <div className="search-results">
-                  <div className="search-no-results">No inflatables found</div>
-                </div>
-              )}
-            </div>
+        <nav className="main-navigation">
+          <button 
+            className={`nav-link ${currentPage === 'categories' ? 'active' : ''}`}
+            onClick={() => handleNavClick('categories')}
+          >
+            HOME
+          </button>
+          <button 
+            className={`nav-link ${currentPage === 'inflatables' ? 'active' : ''}`}
+            onClick={() => handleNavClick('inflatables')}
+          >
+            INFLATABLES
+          </button>
+          <button 
+            className={`nav-link ${currentPage === 'faq' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('faq')}
+          >
+            FAQ
+          </button>
+          <button 
+            className={`nav-link ${currentPage === 'quote' || currentPage === 'booking' ? 'active' : ''}`}
+            onClick={() => handleNavClick('booking')}
+          >
+            BOOK IT
+          </button>
+          {/* Hidden admin access - keep for now */}
+          {currentPage === 'admin' && (
+            <button 
+              className="back-button admin-only"
+              onClick={handleBackFromAdmin}
+            >
+              ← Back to Customer View
+            </button>
           )}
-          <div className="header-actions">
-            {currentPage === 'inflatables' && (
-              <button 
-                className="back-button"
-                onClick={handleBackToCategories}
-              >
-                ← Back to Categories
-              </button>
-            )}
-            {currentPage === 'booking' && (
-              <button 
-                className="back-button"
-                onClick={handleBackToInflatables}
-              >
-                ← Back to Inflatables
-              </button>
-            )}
-            {currentPage === 'admin' ? (
-              <button 
-                className="back-button"
-                onClick={handleBackFromAdmin}
-              >
-                ← Back to Customer View
-              </button>
-            ) : (
-              <>
-                {cart.length > 0 && (
-                  <button 
-                    className="cart-badge"
-                    onClick={handleProceedToCheckout}
-                    title="View cart"
-                  >
-                    {cart.length} {cart.length === 1 ? 'item' : 'items'}
-                  </button>
-                )}
-                <button 
-                  className="admin-button"
-                  onClick={handleNavigateToAdmin}
-                >
-                  Admin Dashboard
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+          {/* Hidden cart indicator - keep for now */}
+          {cart.length > 0 && currentPage !== 'admin' && currentPage !== 'quote' && (
+            <span className="cart-indicator" onClick={handleProceedToCheckout}>
+              {cart.length} {cart.length === 1 ? 'item' : 'items'} in cart
+            </span>
+          )}
+        </nav>
       </header>
       
       <main className="app-main">
@@ -263,6 +227,7 @@ function App() {
                     eventInfo={eventInfo}
                     onSetCustomerInfo={handleSetCustomerInfo}
                     onAddToCart={handleAddToCart}
+                    onSetQuoteInfo={handleSetQuoteInfo}
                     onProceedToCheckout={handleProceedToCheckout}
                     onBackToCategories={handleBackToCategories}
                   />
@@ -272,12 +237,16 @@ function App() {
                     cart={cart}
                     customerInfo={customerInfo}
                     eventInfo={eventInfo}
+                    quoteInfo={quoteInfo}
                     onBackToCategories={handleBackToCategories}
                     onClearCart={handleClearCart}
                   />
                 )}
         {currentPage === 'admin' && (
           <AdminBookingsPage onBack={handleBackFromAdmin} />
+        )}
+        {currentPage === 'faq' && (
+          <FAQPage />
         )}
       </main>
     </div>

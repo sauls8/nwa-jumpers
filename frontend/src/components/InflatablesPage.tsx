@@ -9,6 +9,28 @@ interface InflatablesPageProps {
   onQuickBook?: (inflatable: Inflatable) => void;
 }
 
+// Helper function to format dimensions from "15ft x 15ft x 12ft" to "W15' L15' H12'"
+const formatDimensions = (dimensions: string): string => {
+  if (!dimensions) return 'N/A';
+  
+  // Try to parse format like "15ft x 15ft x 12ft" or "15ft x 15ft x 12ft"
+  const match = dimensions.match(/(\d+)\s*ft\s*x\s*(\d+)\s*ft\s*x\s*(\d+)\s*ft/i);
+  if (match) {
+    const [, width, length, height] = match;
+    return `W${width}' L${length}' H${height}'`;
+  }
+  
+  // Try to parse format like "15' x 15' x 12'"
+  const match2 = dimensions.match(/(\d+)\s*'\s*x\s*(\d+)\s*'\s*x\s*(\d+)\s*'/i);
+  if (match2) {
+    const [, width, length, height] = match2;
+    return `W${width}' L${length}' H${height}'`;
+  }
+  
+  // If no match, return original
+  return dimensions;
+};
+
 const InflatablesPage: React.FC<InflatablesPageProps> = ({ 
   categoryId, 
   onInflatableSelect, 
@@ -61,50 +83,11 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
             
             <div className="inflatable-content">
               <h3 className="inflatable-name">{inflatable.name}</h3>
-              <p className="inflatable-description">{inflatable.description}</p>
-              
-              <div className="inflatable-details">
-                <div className="detail-item">
-                  <span className="detail-label">Capacity:</span>
-                  <span className="detail-value">{inflatable.capacity}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Size:</span>
-                  <span className="detail-value">{inflatable.dimensions}</span>
-                </div>
+              <div className="inflatable-dimensions">
+                {formatDimensions(inflatable.dimensions)}
               </div>
-              
-              <div className="features-list">
-                {inflatable.features.map((feature: string, index: number) => (
-                  <span key={index} className="feature-tag">
-                    {feature}
-                  </span>
-                ))}
-              </div>
-              
-              <div className="card-actions">
-                <button 
-                  className="book-now-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onQuickBook) {
-                      onQuickBook(inflatable);
-                    } else {
-                      onInflatableSelect(inflatable);
-                    }
-                  }}
-                >
-                  Book Now
-                </button>
-                <button 
-                  className="view-details-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onInflatableSelect(inflatable);
-                  }}
-                >
-                  View Details
-                </button>
+              <div className="inflatable-price-display">
+                ${inflatable.price.toFixed(0)}
               </div>
             </div>
           </div>

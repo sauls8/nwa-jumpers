@@ -2,7 +2,8 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  color: #f9fafb;
+  color: #000000;
+  background-color: #ffffff;
 }
 
 .quote-header {
@@ -13,40 +14,41 @@
 .quote-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  color: #fff;
+  color: #000000;
 }
 
 .quote-subtitle {
-  color: rgba(255, 255, 255, 0.7);
+  color: #666666;
   font-size: 1.1rem;
 }
 
 .empty-cart {
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(31, 41, 55, 0.8);
+  background: #f3f4f6;
   border-radius: 12px;
-  border: 1px solid rgba(75, 85, 99, 0.3);
+  border: 1px solid #e5e7eb;
 }
 
 .empty-cart h2 {
   margin-bottom: 1rem;
-  color: #fff;
+  color: #000000;
 }
 
 .empty-cart p {
-  color: rgba(255, 255, 255, 0.7);
+  color: #666666;
   margin-bottom: 2rem;
 }
 
 .customer-info-section,
 .bookings-section,
 .quote-summary {
-  background: rgba(31, 41, 55, 0.8);
+  background: #ffffff;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(75, 85, 99, 0.3);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .customer-info-section h2,
@@ -54,7 +56,7 @@
 .quote-summary h2 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: #fff;
+  color: #000000;
   font-size: 1.5rem;
 }
 
@@ -68,7 +70,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .detail-row:last-child {
@@ -77,11 +79,11 @@
 
 .detail-label {
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666666;
 }
 
 .detail-value {
-  color: #fff;
+  color: #000000;
 }
 
 .detail-value.price {
@@ -97,10 +99,10 @@
 }
 
 .booking-item {
-  background: rgba(17, 24, 39, 0.6);
+  background: #f9fafb;
   border-radius: 8px;
   padding: 1.5rem;
-  border: 1px solid rgba(75, 85, 99, 0.3);
+  border: 1px solid #e5e7eb;
 }
 
 .booking-item-header {
@@ -109,7 +111,7 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid rgba(100, 108, 255, 0.3);
+  border-bottom: 2px solid #646cff;
 }
 
 .booking-number {
@@ -119,7 +121,7 @@
 }
 
 .booking-date {
-  color: rgba(255, 255, 255, 0.8);
+  color: #666666;
   font-size: 0.95rem;
 }
 
@@ -145,12 +147,12 @@
 
 .inflatable-details h3 {
   margin: 0 0 0.5rem 0;
-  color: #fff;
+  color: #000000;
   font-size: 1.2rem;
 }
 
 .inflatable-description {
-  color: rgba(255, 255, 255, 0.7);
+  color: #666666;
   margin: 0 0 0.75rem 0;
   font-size: 0.9rem;
 }
@@ -163,12 +165,12 @@
 
 .inflatable-specs span {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #666666;
 }
 
 .booking-details {
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #e5e7eb;
 }
 
 .summary-details {
@@ -185,7 +187,7 @@
 }
 
 .summary-row.total {
-  border-top: 2px solid rgba(100, 108, 255, 0.3);
+  border-top: 2px solid #646cff;
   margin-top: 0.5rem;
   padding-top: 1rem;
   font-size: 1.5rem;
@@ -265,8 +267,8 @@
 
 /* Event Info Section */
 .event-info-section {
-  background: rgba(100, 108, 255, 0.1);
-  border: 2px solid #646cff;
+  background: #f3f4f6;
+  border: 1px solid #646cff;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -286,15 +288,16 @@
 
 /* Quote Info Section */
 .quote-info-section {
-  background: rgba(31, 41, 55, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.3);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .quote-info-section h2 {
-  color: #f9fafb;
+  color: #000000;
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
 }
@@ -312,7 +315,7 @@
 }
 
 .quote-info-form label {
-  color: #d1d5db;
+  color: #000000;
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -320,10 +323,10 @@
 .quote-info-form input[type="text"],
 .quote-info-form textarea {
   padding: 0.75rem;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #000000;
   font-size: 1rem;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -333,7 +336,7 @@
 .quote-info-form textarea:focus {
   outline: none;
   border-color: #646cff;
-  background: rgba(255, 255, 255, 0.15);
+  background: #ffffff;
   box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
 }
 
@@ -344,7 +347,7 @@
 
 .quote-info-form input::placeholder,
 .quote-info-form textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: #9ca3af;
 }
 
 .checkbox-group {
@@ -356,7 +359,7 @@
   align-items: center;
   gap: 0.75rem;
   cursor: pointer;
-  color: #d1d5db;
+  color: #000000;
   font-weight: 500;
 }
 
@@ -372,14 +375,14 @@
   text-align: center;
   margin-top: 2rem;
   padding: 1.5rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: #f0fdf4;
+  border: 1px solid #86efac;
   border-radius: 8px;
 }
 
 .quote-note p {
   margin: 0.5rem 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: #166534;
 }
 
 .btn {
@@ -407,14 +410,14 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #d1d5db;
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #f3f4f6;
+  border-color: #9ca3af;
 }
 
 @media (max-width: 768px) {
