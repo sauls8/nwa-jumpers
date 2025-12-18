@@ -2,6 +2,7 @@ import sqlite3 from 'sqlite3';
 import { promisify } from 'util';
 import path from 'path';
 import { createBookingItemsTableQuery, createBookingsTableQuery } from './models/bookingSchema';
+import { createInflatablesTableQuery } from './models/inflatableSchema';
 
 /**
  * Database Configuration
@@ -84,6 +85,7 @@ export const initializeDatabase = async (): Promise<void> => {
     // Create tables if they don't exist
     await dbRun(createBookingsTableQuery);
     await dbRun(createBookingItemsTableQuery);
+    await dbRun(createInflatablesTableQuery);
     
     // Migrate existing tables to add missing columns
     await migrateBookingsTable();

@@ -1,7 +1,7 @@
 .admin-editor-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: flex-start;
@@ -13,15 +13,15 @@
 
 .admin-editor-modal {
   width: min(960px, 100%);
-  background: rgba(17, 24, 39, 0.97);
+  background: #ffffff;
   border-radius: 20px;
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  box-shadow: 0 40px 70px -30px rgba(15, 23, 42, 0.9);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding: 2rem;
-  color: #f9fafb;
+  color: #000000;
 }
 
 .admin-editor-header {
@@ -34,17 +34,20 @@
 .admin-editor-header h3 {
   margin: 0;
   font-size: 1.75rem;
+  color: #000000;
+  font-weight: 700;
 }
 
 .admin-editor-header p {
   margin: 0.25rem 0 0;
-  color: #9ca3af;
+  color: #666666;
+  font-size: 1rem;
 }
 
 .admin-editor-close {
   background: transparent;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  color: #cbd5f5;
+  border: 1px solid #e5e7eb;
+  color: #666666;
   border-radius: 999px;
   padding: 0.35rem 0.75rem;
   cursor: pointer;
@@ -52,8 +55,9 @@
 }
 
 .admin-editor-close:hover {
-  background: rgba(148, 163, 184, 0.15);
-  border-color: rgba(148, 163, 184, 0.6);
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #000000;
 }
 
 .admin-editor-loading,
@@ -65,22 +69,25 @@
 }
 
 .admin-editor-loading {
-  background: rgba(37, 99, 235, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  color: #bfdbfe;
+  background: #dbeafe;
+  border-color: #bfdbfe;
+  color: #1e40af;
   text-align: center;
+  font-weight: 500;
 }
 
 .admin-editor-error {
-  background: rgba(127, 29, 29, 0.2);
-  border-color: rgba(239, 68, 68, 0.45);
-  color: #fecaca;
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #dc2626;
+  font-weight: 500;
 }
 
 .admin-editor-success {
-  background: rgba(22, 101, 52, 0.25);
-  border-color: rgba(34, 197, 94, 0.35);
-  color: #bbf7d0;
+  background: #d1fae5;
+  border-color: #a7f3d0;
+  color: #065f46;
+  font-weight: 500;
 }
 
 .admin-editor-content {
@@ -99,7 +106,7 @@
   margin: 0;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #cbd5f5;
+  color: #000000;
 }
 
 .admin-editor-grid {
@@ -113,16 +120,17 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.95rem;
-  color: #cbd5f5;
+  color: #000000;
+  font-weight: 500;
 }
 
 .admin-editor-grid input,
 .admin-editor-grid select {
   padding: 0.75rem;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(30, 41, 59, 0.9);
-  color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #000000;
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -131,13 +139,13 @@
 .admin-editor-grid select:focus,
 .admin-editor-content textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  border-color: #646cff;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
 }
 
 .admin-editor-grid input::placeholder,
 .admin-editor-grid textarea::placeholder {
-  color: rgba(203, 213, 225, 0.5);
+  color: #9ca3af;
 }
 
 .admin-editor-wide {
@@ -145,10 +153,10 @@
 }
 
 .admin-editor-content textarea {
-  background: rgba(30, 41, 59, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  color: #f9fafb;
+  color: #000000;
   padding: 0.9rem;
   resize: vertical;
   font-size: 0.95rem;
@@ -162,7 +170,7 @@
 
 .admin-editor-items-empty {
   margin: 0;
-  color: #9ca3af;
+  color: #666666;
   font-size: 0.95rem;
 }
 
@@ -172,8 +180,8 @@
   gap: 0.75rem;
   padding: 1rem;
   border-radius: 14px;
-  border: 1px solid rgba(94, 234, 212, 0.2);
-  background: rgba(15, 118, 110, 0.15);
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 .admin-editor-item-grid {
@@ -187,15 +195,16 @@
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.9rem;
-  color: #cbd5f5;
+  color: #000000;
+  font-weight: 500;
 }
 
 .admin-editor-item-grid input {
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px solid rgba(45, 212, 191, 0.25);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 0.6rem 0.75rem;
-  color: #f9fafb;
+  color: #000000;
 }
 
 .admin-editor-item-notes {
@@ -205,10 +214,10 @@
 }
 
 .admin-editor-item-notes textarea {
-  background: rgba(17, 24, 39, 0.85);
-  border: 1px solid rgba(45, 212, 191, 0.25);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
-  color: #f9fafb;
+  color: #000000;
   padding: 0.6rem 0.75rem;
   font-size: 0.9rem;
   min-height: 80px;
@@ -216,34 +225,36 @@
 
 .admin-editor-remove-item {
   align-self: flex-start;
-  background: transparent;
-  border: 1px solid rgba(248, 113, 113, 0.5);
-  color: #fecaca;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   border-radius: 999px;
   padding: 0.4rem 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .admin-editor-remove-item:hover {
-  background: rgba(248, 113, 113, 0.15);
-  border-color: rgba(248, 113, 113, 0.8);
+  background: #fecaca;
+  border-color: #fca5a5;
 }
 
 .admin-editor-add-item {
   align-self: flex-start;
-  background: transparent;
-  border: 1px dashed rgba(94, 234, 212, 0.35);
-  color: #5eead4;
+  background: #e0e7ff;
+  border: 1px dashed #c7d2fe;
+  color: #4338ca;
   border-radius: 999px;
   padding: 0.5rem 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .admin-editor-add-item:hover {
-  background: rgba(94, 234, 212, 0.1);
-  border-color: rgba(94, 234, 212, 0.6);
+  background: #c7d2fe;
+  border-color: #a5b4fc;
 }
 
 .admin-editor-footer {
@@ -261,31 +272,34 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
+  font-size: 0.95rem;
 }
 
 .admin-editor-cancel {
-  background: rgba(148, 163, 184, 0.2);
-  color: #cbd5f5;
+  background: #f3f4f6;
+  color: #000000;
+  border: 1px solid #e5e7eb;
 }
 
 .admin-editor-cancel:hover {
-  background: rgba(148, 163, 184, 0.3);
+  background: #e5e7eb;
+  border-color: #d1d5db;
 }
 
 .admin-editor-save {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: #f9fafb;
-  box-shadow: 0 20px 40px -18px rgba(99, 102, 241, 0.75);
+  background: #646cff;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
 }
 
 .admin-editor-save:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 22px 45px -18px rgba(99, 102, 241, 0.85);
+  background: #535bf2;
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
 }
 
 .admin-editor-save:disabled,
 .admin-editor-cancel:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -300,4 +314,3 @@
     padding: 2.5rem 1rem;
   }
 }
-

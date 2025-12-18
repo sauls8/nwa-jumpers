@@ -7,6 +7,7 @@ import Calendar from './Calendar';
 
 interface AdminBookingsPageProps {
   onBack: () => void;
+  onNavigateToInventory?: () => void;
 }
 
 const formatDisplayDate = (date: string): string => {
@@ -48,7 +49,7 @@ const formatSubmittedAt = (timestamp?: string): string => {
   return parsed.toLocaleString();
 };
 
-const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
+const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack, onNavigateToInventory }) => {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -158,9 +159,20 @@ const AdminBookingsPage: React.FC<AdminBookingsPageProps> = ({ onBack }) => {
           <h2>Admin Booking Dashboard</h2>
           <p>Review scheduled rentals by date and export printable summaries.</p>
         </div>
-        <button className="back-button" onClick={onBack}>
-          ← Back to Customer View
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {onNavigateToInventory && (
+            <button 
+              className="primary-button" 
+              onClick={onNavigateToInventory}
+              style={{ background: '#646cff', border: '1px solid #646cff', borderRadius: '8px', padding: '0.75rem 1.5rem', color: 'white', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
+            >
+              📦 Manage Inventory
+            </button>
+          )}
+          <button className="back-button" onClick={onBack}>
+            ← Back to Customer View
+          </button>
+        </div>
       </div>
 
       <section className="admin-controls">

@@ -4,12 +4,14 @@ import CategoriesPage from './components/CategoriesPage';
 import InflatablesPage from './components/InflatablesPage';
 import BookingForm from './components/BookingForm';
 import AdminBookingsPage from './components/AdminBookingsPage';
+import AdminInventoryPage from './components/AdminInventoryPage';
 import QuotePage from './components/QuotePage';
 import FAQPage from './components/FAQPage';
-import { inflatablesData, type Inflatable } from './data/inflatables';
+import type { Inflatable } from './services/inventoryService';
 import type { CartItem, CustomerInfo, EventInfo, QuoteInfo } from './types/cart';
+import { useInflatables } from './hooks/useInflatables';
 
-type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin' | 'quote' | 'faq';
+type AppPage = 'categories' | 'inflatables' | 'booking' | 'admin' | 'inventory' | 'quote' | 'faq';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>('categories');
@@ -21,6 +23,9 @@ function App() {
   const [quoteInfo, setQuoteInfo] = useState<QuoteInfo | null>(null); // Order form data (surface, notes, overnight, etc.)
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+
+  // Fetch inflatables for search functionality
+  const { inflatables: allInflatables } = useInflatables();
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -54,6 +59,14 @@ function App() {
     setCurrentPage('admin');
   };
 
+  const handleNavigateToInventory = () => {
+    setCurrentPage('inventory');
+  };
+
+  const handleBackFromInventory = () => {
+    setCurrentPage('admin');
+  };
+
   const handleBackFromAdmin = () => {
     handleBackToCategories();
   };
@@ -75,11 +88,23 @@ function App() {
     setQuoteInfo(info);
   };
 
+  const handleRemoveFromCart = (itemId: string) => {
+    setCart(prev => prev.filter(item => item.id !== itemId));
+    // If cart becomes empty, clear event info
+    if (cart.length === 1) {
+      setEventInfo(null);
+      setQuoteInfo(null);
+    }
+  };
+
   const handleClearCart = () => {
     setCart([]);
     setEventInfo(null); // Clear event info when clearing cart
     setQuoteInfo(null); // Clear quote info when clearing cart
   };
+
+  // Calculate cart total for header display
+  const cartTotal = cart.reduce((sum, item) => sum + (item.inflatable.price || 0), 0);
 
   const handleProceedToCheckout = () => {
     setCurrentPage('quote');
@@ -96,7 +121,7 @@ function App() {
       const query = searchQuery.toLowerCase().trim();
       if (query.length === 0) return [];
       
-      return inflatablesData.filter(inflatable => {
+      return allInflatables.filter(inflatable => {
         if (!inflatable) return false;
         try {
           return (
@@ -115,7 +140,7 @@ function App() {
       console.error('Error in search:', error);
       return [];
     }
-  }, [searchQuery]);
+  }, [searchQuery, allInflatables]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -189,7 +214,12 @@ function App() {
           >
             BOOK IT
           </button>
-          {/* Hidden admin access - keep for now */}
+          <button 
+            className={`nav-link ${currentPage === 'admin' || currentPage === 'inventory' ? 'active' : ''}`}
+            onClick={() => handleNavigateToAdmin()}
+          >
+            ADMIN
+          </button>
           {currentPage === 'admin' && (
             <button 
               className="back-button admin-only"
@@ -198,11 +228,12 @@ function App() {
               ← Back to Customer View
             </button>
           )}
-          {/* Hidden cart indicator - keep for now */}
+          {/* Cart indicator with total */}
           {cart.length > 0 && currentPage !== 'admin' && currentPage !== 'quote' && (
-            <span className="cart-indicator" onClick={handleProceedToCheckout}>
-              {cart.length} {cart.length === 1 ? 'item' : 'items'} in cart
-            </span>
+            <div className="cart-indicator" onClick={handleProceedToCheckout}>
+              <span className="cart-count">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+              <span className="cart-total">${cartTotal.toFixed(2)}</span>
+            </div>
           )}
         </nav>
       </header>
@@ -238,12 +269,19 @@ function App() {
                     customerInfo={customerInfo}
                     eventInfo={eventInfo}
                     quoteInfo={quoteInfo}
+                    onRemoveFromCart={handleRemoveFromCart}
                     onBackToCategories={handleBackToCategories}
                     onClearCart={handleClearCart}
                   />
                 )}
         {currentPage === 'admin' && (
-          <AdminBookingsPage onBack={handleBackFromAdmin} />
+          <AdminBookingsPage 
+            onBack={handleBackFromAdmin}
+            onNavigateToInventory={handleNavigateToInventory}
+          />
+        )}
+        {currentPage === 'inventory' && (
+          <AdminInventoryPage onBack={handleBackFromInventory} />
         )}
         {currentPage === 'faq' && (
           <FAQPage />

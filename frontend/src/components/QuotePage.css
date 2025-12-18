@@ -120,6 +120,33 @@
   font-size: 1.1rem;
 }
 
+.remove-item-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.remove-item-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.remove-item-btn:active {
+  transform: scale(0.95);
+}
+
 .booking-date {
   color: #666666;
   font-size: 0.95rem;
@@ -184,6 +211,11 @@
   justify-content: space-between;
   padding: 0.75rem 0;
   font-size: 1.1rem;
+}
+
+.summary-row.discount {
+  color: #10b981;
+  font-weight: 600;
 }
 
 .summary-row.total {

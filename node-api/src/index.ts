@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { initializeDatabase } from './database';
 import bookingsRouter from './routes/bookings';
+import inventoryRouter from './routes/inventory';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Bookings routes
 app.use('/api/bookings', bookingsRouter);
+
+// Inventory routes
+app.use('/api/inventory', inventoryRouter);
 
 /**
  * Initialize database and start server

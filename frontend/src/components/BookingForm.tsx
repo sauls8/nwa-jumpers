@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './BookingForm.css';
-import type { Inflatable } from '../data/inflatables';
-import { inflatablesData } from '../data/inflatables';
+import type { Inflatable } from '../services/inventoryService';
 import type { CartItem, CustomerInfo, EventInfo, QuoteInfo } from '../types/cart';
 import Calendar from './Calendar';
 import { checkDateAvailability } from '../services/availabilityService';
@@ -44,7 +43,6 @@ const BookingForm: React.FC<BookingFormProps> = ({
   });
 
   // Order form specific fields
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [overnightPickup, setOvernightPickup] = useState(false);
   const [surfaceType, setSurfaceType] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
@@ -60,26 +58,55 @@ const BookingForm: React.FC<BookingFormProps> = ({
   const [error, setError] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showAddMorePrompt, setShowAddMorePrompt] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize selected items if coming from single inflatable selection
+  // Save form data to localStorage whenever it changes
   useEffect(() => {
-    if (selectedInflatable && selectedInflatable.id) {
-      setSelectedItems(new Set([selectedInflatable.id]));
-    }
-  }, [selectedInflatable]);
-
-  // Handle item checkbox toggle
-  const handleItemToggle = (inflatableId: string) => {
-    setSelectedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(inflatableId)) {
-        newSet.delete(inflatableId);
-      } else {
-        newSet.add(inflatableId);
+    if (!isEventLocked) {
+      const formData = {
+        customerForm,
+        eventData,
+        overnightPickup,
+        surfaceType,
+        notes
+      };
+      try {
+        localStorage.setItem('nwa-jumpers-form-draft', JSON.stringify(formData));
+      } catch (error) {
+        console.error('Error saving form to localStorage:', error);
       }
-      return newSet;
-    });
-  };
+    }
+  }, [customerForm, eventData, overnightPickup, surfaceType, notes, isEventLocked]);
+
+  // Load form data from localStorage on mount (if not locked)
+  useEffect(() => {
+    if (!isEventLocked && !customerInfo) {
+      try {
+        const saved = localStorage.getItem('nwa-jumpers-form-draft');
+        if (saved) {
+          const formData = JSON.parse(saved);
+          if (formData.customerForm) {
+            setCustomerForm(formData.customerForm);
+          }
+          if (formData.eventData) {
+            setEventData(formData.eventData);
+          }
+          if (formData.overnightPickup !== undefined) {
+            setOvernightPickup(formData.overnightPickup);
+          }
+          if (formData.surfaceType) {
+            setSurfaceType(formData.surfaceType);
+          }
+          if (formData.notes) {
+            setNotes(formData.notes);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading form from localStorage:', error);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // Update customer form when customerInfo changes (with Chrome-safe handling)
   useEffect(() => {
@@ -260,9 +287,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
       return false;
     }
 
-    // Validate at least one item is selected
-    if (selectedItems.size === 0) {
-      setError('Please select at least one inflatable');
+    // Validate that an inflatable was selected
+    if (!selectedInflatable || !selectedInflatable.id) {
+      setError('Please select an inflatable to continue');
       return false;
     }
 
@@ -275,12 +302,14 @@ const BookingForm: React.FC<BookingFormProps> = ({
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
     
     try {
       if (!validateForm()) {
+        setIsSubmitting(false);
         return;
       }
 
@@ -318,26 +347,32 @@ const BookingForm: React.FC<BookingFormProps> = ({
       };
       onSetQuoteInfo(quoteInfoToSave);
 
-      // Add each selected item to cart
-      selectedItems.forEach((inflatableId) => {
-        const inflatable = inflatablesData.find(i => i.id === inflatableId);
-        if (inflatable) {
-          const cartItem: CartItem = {
-            id: `${inflatable.id}-${Date.now()}-${Math.random()}`,
-            inflatable: inflatable
-          };
-          onAddToCart(cartItem, newEventInfo);
-        }
-      });
+      // Add the selected inflatable to cart
+      if (selectedInflatable) {
+        const cartItem: CartItem = {
+          id: `${selectedInflatable.id}-${Date.now()}-${Math.random()}`,
+          inflatable: selectedInflatable
+        };
+        onAddToCart(cartItem, newEventInfo);
+      }
       
+      // Clear localStorage after successful submission
+      try {
+        localStorage.removeItem('nwa-jumpers-form-draft');
+      } catch (error) {
+        console.error('Error clearing localStorage:', error);
+      }
+
       // Show success message and option to proceed
       setShowAddMorePrompt(true);
       
       // Clear field errors
       setFieldErrors({});
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Error submitting form:', error);
       setError('An unexpected error occurred. Please try again.');
+      setIsSubmitting(false);
     }
   };
 
@@ -368,7 +403,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         <div className="add-more-prompt">
           <div className="prompt-content">
             <h3>✓ Items Added to Cart!</h3>
-            <p>{selectedItems.size} {selectedItems.size === 1 ? 'item has' : 'items have'} been added to your cart.</p>
+            <p>1 item has been added to your cart.</p>
             <div className="prompt-event-info">
               <p><strong>Event Date:</strong> {eventData.event_date ? new Date(eventData.event_date).toLocaleDateString() : ''}</p>
               <p><strong>Event Time:</strong> {eventData.event_start_time} - {eventData.event_end_time}</p>
@@ -410,303 +445,432 @@ const BookingForm: React.FC<BookingFormProps> = ({
       )}
       
       <div className="booking-header">
-        <h2>Order Form</h2>
+        <h2>Booking Form</h2>
+        <p className="form-subtitle">Fill out the form below to complete your rental booking</p>
       </div>
 
       <form onSubmit={handleSubmit} className="order-form">
         {error && <div className="error-message">{error}</div>}
         
-        {/* Customer Information Section */}
-        <div className="form-row">
-          <label htmlFor="company_name">Company Name</label>
-          <input
-            type="text"
-            id="company_name"
-            name="company_name"
-            value={customerForm.company_name || ''}
-            onChange={handleCustomerInputChange}
-          />
-        </div>
-
-        <div className="form-row">
-          <label htmlFor="first_name">Contact Name*</label>
-          <div className="name-inputs">
-            <input
-              type="text"
-              id="first_name"
-              name="first_name"
-              placeholder="First"
-              value={customerForm.first_name || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.first_name ? 'error' : ''}
-            />
-            <input
-              type="text"
-              id="last_name"
-              name="last_name"
-              placeholder="Last"
-              value={customerForm.last_name || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.last_name ? 'error' : ''}
-            />
+        {/* Section 1: Contact Information */}
+        <div className="form-section">
+          <div className="form-section-header">
+            <h3>1. Contact Information</h3>
+            <p className="section-description">Tell us how to reach you</p>
           </div>
-        </div>
-
-        <div className="form-row">
-          <label htmlFor="customer_phone">Phone*</label>
-          <input
-            type="tel"
-            id="customer_phone"
-            name="customer_phone"
-            placeholder="### ### ####"
-            value={customerForm.customer_phone}
-            onChange={handleCustomerInputChange}
-            required
-            className={fieldErrors.customer_phone ? 'error' : ''}
-          />
-        </div>
-
-        <div className="form-row">
-          <label htmlFor="customer_email">Email*</label>
-          <input
-            type="email"
-            id="customer_email"
-            name="customer_email"
-            value={customerForm.customer_email}
-            onChange={handleCustomerInputChange}
-            required
-            className={fieldErrors.customer_email ? 'error' : ''}
-          />
-        </div>
-
-        <div className="form-row">
-          <label>Delivery Address*</label>
-          <div className="address-inputs">
-            <input
-              type="text"
-              name="street_address"
-              placeholder="Street Address"
-              value={customerForm.street_address || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.street_address ? 'error' : ''}
-            />
-            <input
-              type="text"
-              name="city"
-              placeholder="City"
-              value={customerForm.city || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.city ? 'error' : ''}
-            />
-            <input
-              type="text"
-              name="state"
-              placeholder="State"
-              value={customerForm.state || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.state ? 'error' : ''}
-            />
-            <input
-              type="text"
-              name="postal_code"
-              placeholder="Postal / Zip Code"
-              value={customerForm.postal_code || ''}
-              onChange={handleCustomerInputChange}
-              className={fieldErrors.postal_code ? 'error' : ''}
-            />
-          </div>
-        </div>
-
-        {/* Event Details Section */}
-        <div className="form-row">
-          <label htmlFor="event_date">Event Date*</label>
-          <div className="date-input-wrapper">
-            <input
-              type="text"
-              id="event_date"
-              name="event_date"
-              value={eventData.event_date ? (() => {
-                try {
-                  const date = new Date(eventData.event_date);
-                  return isNaN(date.getTime()) ? eventData.event_date : date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-                } catch {
-                  return eventData.event_date;
-                }
-              })() : ''}
-              readOnly
-              placeholder="MM/DD/YYYY"
-              className={`date-input ${fieldErrors.event_date ? 'error' : ''}`}
-              required
-            />
-            <span className="input-icon">📅</span>
-            {!isEventLocked && (
-              <div className="calendar-inline">
-                <Calendar
-                  selectedDate={eventData.event_date}
-                  onDateSelect={handleDateSelect}
-                  onAvailabilityCheck={(date: string) => checkDateAvailability(date)}
-                />
+          
+          <div className="form-section-content">
+            <div className="form-row">
+              <label htmlFor="first_name">Contact Name*</label>
+              <div className="input-group">
+                <div className="name-inputs">
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      id="first_name"
+                      name="first_name"
+                      placeholder="First"
+                      value={customerForm.first_name || ''}
+                      onChange={handleCustomerInputChange}
+                      className={fieldErrors.first_name ? 'error' : (customerForm.first_name ? 'valid' : '')}
+                    />
+                    {customerForm.first_name && !fieldErrors.first_name && <span className="field-success">✓</span>}
+                  </div>
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      id="last_name"
+                      name="last_name"
+                      placeholder="Last"
+                      value={customerForm.last_name || ''}
+                      onChange={handleCustomerInputChange}
+                      className={fieldErrors.last_name ? 'error' : (customerForm.last_name ? 'valid' : '')}
+                    />
+                    {customerForm.last_name && !fieldErrors.last_name && <span className="field-success">✓</span>}
+                  </div>
+                </div>
+                {fieldErrors.first_name && <span className="field-error-inline">{fieldErrors.first_name}</span>}
+                {fieldErrors.last_name && <span className="field-error-inline">{fieldErrors.last_name}</span>}
               </div>
-            )}
+            </div>
+
+            <div className="form-row">
+              <label htmlFor="customer_email">Email*</label>
+              <div className="input-group">
+                <div className="input-wrapper">
+                  <input
+                    type="email"
+                    id="customer_email"
+                    name="customer_email"
+                    value={customerForm.customer_email}
+                    onChange={handleCustomerInputChange}
+                    required
+                    className={fieldErrors.customer_email ? 'error' : (customerForm.customer_email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerForm.customer_email) ? 'valid' : '')}
+                  />
+                  {customerForm.customer_email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerForm.customer_email) && !fieldErrors.customer_email && <span className="field-success">✓</span>}
+                </div>
+                {fieldErrors.customer_email && <span className="field-error-inline">{fieldErrors.customer_email}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <label htmlFor="customer_phone">Phone*</label>
+              <div className="input-group">
+                <div className="input-wrapper">
+                  <input
+                    type="tel"
+                    id="customer_phone"
+                    name="customer_phone"
+                    placeholder="### ### ####"
+                    value={customerForm.customer_phone}
+                    onChange={handleCustomerInputChange}
+                    required
+                    className={fieldErrors.customer_phone ? 'error' : (customerForm.customer_phone && customerForm.customer_phone.length >= 14 ? 'valid' : '')}
+                  />
+                  {customerForm.customer_phone && customerForm.customer_phone.length >= 14 && !fieldErrors.customer_phone && <span className="field-success">✓</span>}
+                </div>
+                {fieldErrors.customer_phone && <span className="field-error-inline">{fieldErrors.customer_phone}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <label htmlFor="company_name">Company Name <span className="optional-label">(Optional)</span></label>
+              <input
+                type="text"
+                id="company_name"
+                name="company_name"
+                value={customerForm.company_name || ''}
+                onChange={handleCustomerInputChange}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="form-row">
-          <label htmlFor="event_start_time">Event Start Time*</label>
-          <div className="time-input-wrapper">
-            <input
-              type="time"
-              id="event_start_time"
-              name="event_start_time"
-              value={eventData.event_start_time}
-              onChange={handleEventInputChange}
-              required
-              className={`time-input ${fieldErrors.event_start_time ? 'error' : ''}`}
-            />
-            <span className="input-icon">🕐</span>
+        {/* Section 2: Delivery Address */}
+        <div className="form-section">
+          <div className="form-section-header">
+            <h3>2. Delivery Address</h3>
+            <p className="section-description">Where should we deliver your rental?</p>
+          </div>
+          
+          <div className="form-section-content">
+
+            <div className="form-row">
+              <label>Street Address*</label>
+              <div className="input-group">
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    name="street_address"
+                    placeholder="123 Main Street"
+                    value={customerForm.street_address || ''}
+                    onChange={handleCustomerInputChange}
+                    className={fieldErrors.street_address ? 'error' : (customerForm.street_address ? 'valid' : '')}
+                  />
+                  {customerForm.street_address && !fieldErrors.street_address && <span className="field-success">✓</span>}
+                </div>
+                {fieldErrors.street_address && <span className="field-error-inline">{fieldErrors.street_address}</span>}
+              </div>
+            </div>
+
+            <div className="form-row">
+              <label>City*</label>
+              <div className="input-group">
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    name="city"
+                    placeholder="City"
+                    value={customerForm.city || ''}
+                    onChange={handleCustomerInputChange}
+                    className={fieldErrors.city ? 'error' : (customerForm.city ? 'valid' : '')}
+                  />
+                  {customerForm.city && !fieldErrors.city && <span className="field-success">✓</span>}
+                </div>
+                {fieldErrors.city && <span className="field-error-inline">{fieldErrors.city}</span>}
+              </div>
+            </div>
+
+            <div className="form-row-group">
+              <div className="form-row">
+                <label>State*</label>
+                <div className="input-group">
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      name="state"
+                      placeholder="AR"
+                      value={customerForm.state || ''}
+                      onChange={handleCustomerInputChange}
+                      className={fieldErrors.state ? 'error' : (customerForm.state ? 'valid' : '')}
+                    />
+                    {customerForm.state && !fieldErrors.state && <span className="field-success">✓</span>}
+                  </div>
+                  {fieldErrors.state && <span className="field-error-inline">{fieldErrors.state}</span>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <label>Zip Code*</label>
+                <div className="input-group">
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      name="postal_code"
+                      placeholder="72701"
+                      value={customerForm.postal_code || ''}
+                      onChange={handleCustomerInputChange}
+                      className={fieldErrors.postal_code ? 'error' : (customerForm.postal_code ? 'valid' : '')}
+                    />
+                    {customerForm.postal_code && !fieldErrors.postal_code && <span className="field-success">✓</span>}
+                  </div>
+                  {fieldErrors.postal_code && <span className="field-error-inline">{fieldErrors.postal_code}</span>}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="form-row">
-          <label htmlFor="event_end_time">Event Finish Time</label>
-          <div className="time-input-wrapper">
-            <input
-              type="time"
-              id="event_end_time"
-              name="event_end_time"
-              value={eventData.event_end_time}
-              onChange={handleEventInputChange}
-              className={`time-input ${fieldErrors.event_end_time ? 'error' : ''}`}
-            />
-            <span className="input-icon">🕐</span>
+        {/* Section 3: Event Details */}
+        <div className="form-section">
+          <div className="form-section-header">
+            <h3>3. Event Details</h3>
+            <p className="section-description">When is your event?</p>
+          </div>
+          
+          <div className="form-section-content">
+            <div className="form-row">
+              <label htmlFor="event_date">Event Date*</label>
+              <div className="input-group">
+                <div className="date-input-wrapper">
+                  <div className="input-wrapper">
+                    <input
+                      type="text"
+                      id="event_date"
+                      name="event_date"
+                      value={eventData.event_date ? (() => {
+                        try {
+                          const date = new Date(eventData.event_date);
+                          return isNaN(date.getTime()) ? eventData.event_date : date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+                        } catch {
+                          return eventData.event_date;
+                        }
+                      })() : ''}
+                      readOnly
+                      placeholder="MM/DD/YYYY"
+                      className={`date-input ${fieldErrors.event_date ? 'error' : (eventData.event_date ? 'valid' : '')}`}
+                      required
+                    />
+                    <span className="input-icon">📅</span>
+                    {eventData.event_date && !fieldErrors.event_date && <span className="field-success">✓</span>}
+                  </div>
+                  {!isEventLocked && (
+                    <div className="calendar-inline">
+                      <Calendar
+                        selectedDate={eventData.event_date}
+                        onDateSelect={handleDateSelect}
+                        onAvailabilityCheck={(date: string) => checkDateAvailability(date)}
+                      />
+                    </div>
+                  )}
+                </div>
+                {fieldErrors.event_date && <span className="field-error-inline">{fieldErrors.event_date}</span>}
+              </div>
+            </div>
+
+            <div className="form-row-group">
+              <div className="form-row">
+                <label htmlFor="event_start_time">Start Time*</label>
+                <div className="input-group">
+                  <div className="time-input-wrapper">
+                    <div className="input-wrapper">
+                      <input
+                        type="time"
+                        id="event_start_time"
+                        name="event_start_time"
+                        value={eventData.event_start_time}
+                        onChange={handleEventInputChange}
+                        required
+                        className={`time-input ${fieldErrors.event_start_time ? 'error' : (eventData.event_start_time ? 'valid' : '')}`}
+                      />
+                      <span className="input-icon">🕐</span>
+                      {eventData.event_start_time && !fieldErrors.event_start_time && <span className="field-success">✓</span>}
+                    </div>
+                  </div>
+                  {fieldErrors.event_start_time && <span className="field-error-inline">{fieldErrors.event_start_time}</span>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <label htmlFor="event_end_time">End Time*</label>
+                <div className="input-group">
+                  <div className="time-input-wrapper">
+                    <div className="input-wrapper">
+                      <input
+                        type="time"
+                        id="event_end_time"
+                        name="event_end_time"
+                        value={eventData.event_end_time}
+                        onChange={handleEventInputChange}
+                        className={`time-input ${fieldErrors.event_end_time ? 'error' : (eventData.event_end_time ? 'valid' : '')}`}
+                      />
+                      <span className="input-icon">🕐</span>
+                      {eventData.event_end_time && !fieldErrors.event_end_time && <span className="field-success">✓</span>}
+                    </div>
+                  </div>
+                  {fieldErrors.event_end_time && <span className="field-error-inline">{fieldErrors.event_end_time}</span>}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Overnight Option */}
-        <div className="form-row">
-          <label></label>
-          <div className="checkbox-wrapper">
-            <input
-              type="checkbox"
-              id="overnight_pickup"
-              checked={overnightPickup}
-              onChange={(e) => setOvernightPickup(e.target.checked)}
-            />
-            <label htmlFor="overnight_pickup">$75.00 pick up inflatable next morning</label>
+        {/* Section 4: Setup Details */}
+        <div className="form-section">
+          <div className="form-section-header">
+            <h3>4. Setup Details</h3>
+            <p className="section-description">Tell us about your setup location</p>
           </div>
-        </div>
+          
+          <div className="form-section-content">
+            <div className="form-row">
+              <label>Surface Type*</label>
+              <div className="surface-selection">
+                <div className="surface-group">
+                  <div className="surface-group-label">Grass (No additional fee)</div>
+                  <div className="radio-group">
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-grass-front"
+                        name="surface"
+                        value="Front Yard Grass"
+                        checked={surfaceType === 'Front Yard Grass'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-grass-front">Front Yard Grass</label>
+                    </div>
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-grass-back"
+                        name="surface"
+                        value="Backyard Grass"
+                        checked={surfaceType === 'Backyard Grass'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-grass-back">Backyard Grass</label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="surface-group">
+                  <div className="surface-group-label">Hard Surfaces <span className="fee-note">($30 sand bags fee)</span></div>
+                  <div className="radio-group">
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-concrete"
+                        name="surface"
+                        value="Concrete"
+                        checked={surfaceType === 'Concrete'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-concrete">Concrete</label>
+                    </div>
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-asphalt"
+                        name="surface"
+                        value="Asphalt"
+                        checked={surfaceType === 'Asphalt'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-asphalt">Asphalt</label>
+                    </div>
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-indoor"
+                        name="surface"
+                        value="Indoor"
+                        checked={surfaceType === 'Indoor'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-indoor">Indoor</label>
+                    </div>
+                    <div className="radio-option">
+                      <input
+                        type="radio"
+                        id="surface-parking"
+                        name="surface"
+                        value="Parking Lot"
+                        checked={surfaceType === 'Parking Lot'}
+                        onChange={(e) => setSurfaceType(e.target.value)}
+                      />
+                      <label htmlFor="surface-parking">Parking Lot</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* Items Selection */}
-        <div className="form-row">
-          <label>Items*</label>
-          <div className="items-grid">
-            {inflatablesData.map((inflatable) => (
-              <div key={inflatable.id} className="item-checkbox-wrapper">
+            <div className="form-row">
+              <label></label>
+              <div className="checkbox-wrapper">
                 <input
                   type="checkbox"
-                  id={`item-${inflatable.id}`}
-                  checked={selectedItems.has(inflatable.id)}
-                  onChange={() => handleItemToggle(inflatable.id)}
+                  id="overnight_pickup"
+                  checked={overnightPickup}
+                  onChange={(e) => setOvernightPickup(e.target.checked)}
                 />
-                <label htmlFor={`item-${inflatable.id}`}>
-                  {inflatable.name} ${inflatable.price.toFixed(0)}
+                <label htmlFor="overnight_pickup">
+                  <strong>Overnight Pickup</strong> - Pick up next morning (+$75.00)
                 </label>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Surface Selection */}
-        <div className="form-row">
-          <label>Surface to set up*</label>
-          <div className="radio-group">
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-grass-front"
-                name="surface"
-                value="Front Yard Grass"
-                checked={surfaceType === 'Front Yard Grass'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-grass-front">Front Yard Grass</label>
-            </div>
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-grass-back"
-                name="surface"
-                value="Backyard Grass"
-                checked={surfaceType === 'Backyard Grass'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-grass-back">Backyard Grass</label>
-            </div>
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-concrete"
-                name="surface"
-                value="Concrete"
-                checked={surfaceType === 'Concrete'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-concrete">Concrete $30/sand bags fee</label>
-            </div>
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-asphalt"
-                name="surface"
-                value="Asphalt"
-                checked={surfaceType === 'Asphalt'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-asphalt">Asphalt $30/sand bags fee</label>
-            </div>
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-indoor"
-                name="surface"
-                value="Indoor"
-                checked={surfaceType === 'Indoor'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-indoor">Indoor $30/sand bags fee</label>
-            </div>
-            <div className="radio-option">
-              <input
-                type="radio"
-                id="surface-parking"
-                name="surface"
-                value="Parking Lot"
-                checked={surfaceType === 'Parking Lot'}
-                onChange={(e) => setSurfaceType(e.target.value)}
-              />
-              <label htmlFor="surface-parking">Parking Lot $30/sand bags fee</label>
             </div>
           </div>
         </div>
 
-        {/* Notes */}
-        <div className="form-row">
-          <label htmlFor="notes">Note</label>
-          <textarea
-            id="notes"
-            name="notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            className="notes-textarea"
-          />
+        {/* Section 5: Additional Notes */}
+        <div className="form-section">
+          <div className="form-section-header">
+            <h3>5. Additional Notes <span className="optional-label">(Optional)</span></h3>
+            <p className="section-description">Any special instructions or requests?</p>
+          </div>
+          
+          <div className="form-section-content">
+            <div className="form-row">
+              <label htmlFor="notes">Notes</label>
+              <textarea
+                id="notes"
+                name="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="notes-textarea"
+                placeholder="Special delivery instructions, access codes, gate information, etc."
+              />
+            </div>
+          </div>
         </div>
 
         {/* Submit Button */}
-        <div className="form-row">
-          <label></label>
-          <button type="submit" className="btn btn-primary place-order-btn">
-            Place Order
+        <div className="form-actions">
+          <button 
+            type="submit" 
+            className="btn btn-primary add-to-cart-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="loading-spinner">⏳</span>
+                Adding to Cart...
+              </>
+            ) : (
+              'Add to Cart'
+            )}
           </button>
         </div>
       </form>
@@ -715,3 +879,4 @@ const BookingForm: React.FC<BookingFormProps> = ({
 };
 
 export default BookingForm;
+

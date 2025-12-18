@@ -72,17 +72,32 @@ html, body {
   right: 2rem;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 0.875rem;
-  color: #666666;
+  color: #000000;
   cursor: pointer;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
+  font-weight: 600;
 }
 
 .cart-indicator:hover {
-  background-color: #f3f4f6;
-  color: #000000;
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.cart-count {
+  color: #666666;
+}
+
+.cart-total {
+  color: #10b981;
+  font-weight: 700;
 }
 
 .back-button.admin-only {

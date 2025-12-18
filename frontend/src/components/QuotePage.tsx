@@ -8,11 +8,12 @@ interface QuotePageProps {
   customerInfo: CustomerInfo | null;
   eventInfo: EventInfo | null; // Shared event date/time for all items
   quoteInfo: QuoteInfo | null; // Quote info from order form (surface, notes, etc.)
+  onRemoveFromCart: (itemId: string) => void;
   onBackToCategories: () => void;
   onClearCart: () => void;
 }
 
-const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, quoteInfo: propQuoteInfo, onBackToCategories, onClearCart }) => {
+const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, quoteInfo: propQuoteInfo, onRemoveFromCart, onBackToCategories, onClearCart }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     type: 'success' | 'error' | null;
@@ -32,8 +33,40 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, qu
   const eventStartTime = eventInfo?.event_start_time || '';
   const eventEndTime = eventInfo?.event_end_time || '';
 
-  // Calculate totals
-  const subtotal = cart.reduce((sum, item) => sum + (item.inflatable.price || 0), 0);
+  // Calculate totals with discounts and fees
+  const baseSubtotal = cart.reduce((sum, item) => sum + (item.inflatable.price || 0), 0);
+  
+  // Calculate discounts
+  let discountPercent = 0;
+  let discountAmount = 0;
+  
+  if (cart.length > 1) {
+    // 10% off for multiple inflatable rentals
+    discountPercent = 10;
+  } else if (baseSubtotal >= 2000) {
+    // 20% off for $2,000+
+    discountPercent = 20;
+  } else if (baseSubtotal >= 1200) {
+    // 15% off for $1,200+
+    discountPercent = 15;
+  }
+  
+  discountAmount = baseSubtotal * (discountPercent / 100);
+  const subtotalAfterDiscount = baseSubtotal - discountAmount;
+  
+  // Calculate additional fees
+  let surfaceFee = 0;
+  if (quoteInfo.event_surface && 
+      ['Concrete', 'Asphalt', 'Indoor', 'Parking Lot'].includes(quoteInfo.event_surface)) {
+    surfaceFee = 30;
+  }
+  
+  const overnightFee = quoteInfo.overnight_pickup ? 75 : 0;
+  
+  // Final subtotal (after discounts, before tax)
+  const subtotal = subtotalAfterDiscount + surfaceFee + overnightFee;
+  
+  // Calculate tax (10% on final subtotal)
   const taxRate = 0.10; // 10% tax (Arkansas)
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
@@ -91,13 +124,42 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, qu
     setSubmitStatus({ type: null, message: '' });
 
     try {
+      // Calculate totals with discounts and fees (same as display)
+      const baseSubtotal = cart.reduce((sum, item) => sum + (item.inflatable.price || 0), 0);
+      let discountPercent = 0;
+      if (cart.length > 1) {
+        discountPercent = 10;
+      } else if (baseSubtotal >= 2000) {
+        discountPercent = 20;
+      } else if (baseSubtotal >= 1200) {
+        discountPercent = 15;
+      }
+      const discountAmount = baseSubtotal * (discountPercent / 100);
+      const subtotalAfterDiscount = baseSubtotal - discountAmount;
+      
+      let surfaceFee = 0;
+      if (quoteInfo.event_surface && 
+          ['Concrete', 'Asphalt', 'Indoor', 'Parking Lot'].includes(quoteInfo.event_surface)) {
+        surfaceFee = 30;
+      }
+      const overnightFee = quoteInfo.overnight_pickup ? 75 : 0;
+      const finalSubtotal = subtotalAfterDiscount + surfaceFee + overnightFee;
+      const calculatedTax = finalSubtotal * 0.10;
+      const calculatedTotal = finalSubtotal + calculatedTax;
+
       const result = await submitQuote(
         customerInfo,
         cart,
-        quoteInfo,
+        {
+          ...quoteInfo,
+          discount_percent: discountPercent > 0 ? discountPercent : undefined
+        },
         eventDate,
         eventStartTime,
-        eventEndTime
+        eventEndTime,
+        finalSubtotal,
+        calculatedTax,
+        calculatedTotal
       );
 
       if (result.success && result.booking_id) {
@@ -270,6 +332,13 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, qu
             <div key={item.id} className="booking-item">
               <div className="booking-item-header">
                 <div className="booking-number">Item #{index + 1}</div>
+                <button 
+                  className="remove-item-btn"
+                  onClick={() => onRemoveFromCart(item.id)}
+                  title="Remove item"
+                >
+                  ×
+                </button>
               </div>
               
               <div className="booking-item-content">
@@ -314,6 +383,28 @@ const QuotePage: React.FC<QuotePageProps> = ({ cart, customerInfo, eventInfo, qu
         <div className="summary-details">
           <div className="summary-row">
             <span>Subtotal ({cart.length} {cart.length === 1 ? 'item' : 'items'}):</span>
+            <span>${baseSubtotal.toFixed(2)}</span>
+          </div>
+          {discountPercent > 0 && (
+            <div className="summary-row discount">
+              <span>Discount ({discountPercent}%):</span>
+              <span>-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {surfaceFee > 0 && (
+            <div className="summary-row">
+              <span>Surface Fee ({quoteInfo.event_surface}):</span>
+              <span>${surfaceFee.toFixed(2)}</span>
+            </div>
+          )}
+          {overnightFee > 0 && (
+            <div className="summary-row">
+              <span>Overnight Pickup:</span>
+              <span>${overnightFee.toFixed(2)}</span>
+            </div>
+          )}
+          <div className="summary-row">
+            <span>Subtotal After Discounts/Fees:</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
           <div className="summary-row">

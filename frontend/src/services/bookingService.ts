@@ -23,7 +23,10 @@ export const submitQuote = async (
   quoteInfo: QuoteInfo,
   eventDate: string,
   eventStartTime: string,
-  eventEndTime: string
+  eventEndTime: string,
+  calculatedSubtotal?: number,
+  calculatedTax?: number,
+  calculatedTotal?: number
 ): Promise<QuoteSubmissionResponse> => {
   try {
     // Validate required fields
@@ -53,10 +56,10 @@ export const submitQuote = async (
       };
     });
 
-    // Calculate totals
-    const subtotal = items.reduce((sum, item) => sum + item.total_price, 0);
-    const tax = subtotal * 0.10; // 10% tax
-    const total = subtotal + tax;
+    // Use provided calculated totals or calculate them
+    const subtotal = calculatedSubtotal ?? items.reduce((sum, item) => sum + item.total_price, 0);
+    const tax = calculatedTax ?? (subtotal * 0.10); // 10% tax
+    const total = calculatedTotal ?? (subtotal + tax);
 
     // Prepare quote payload
     const payload = {
@@ -73,7 +76,8 @@ export const submitQuote = async (
       items: items,
       subtotal_amount: subtotal,
       tax_amount: tax,
-      total_amount: total
+      total_amount: total,
+      discount_percent: quoteInfo.discount_percent || null
     };
 
     const response = await fetch(`${API_BASE_URL}/quote`, {

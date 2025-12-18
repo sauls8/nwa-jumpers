@@ -1,9 +1,15 @@
-// Re-export Inflatable type from service for backward compatibility
-export type { Inflatable } from '../services/inventoryService';
+/**
+ * Seed Inflatables Script
+ * Populates the inflatables table with initial data from the static file
+ * 
+ * Run with: npx ts-node src/scripts/seedInflatables.ts
+ */
 
-// Legacy static data - kept for reference but no longer used
-// All inflatables are now fetched from the API
-export const inflatablesData: Inflatable[] = [
+import { database } from '../database';
+import { initializeDatabase } from '../database';
+
+// Import the static inflatables data
+const inflatablesData = [
   // Castle Category
   {
     id: 'princess-castle',
@@ -38,7 +44,6 @@ export const inflatablesData: Inflatable[] = [
     dimensions: '20ft x 20ft x 16ft',
     capacity: '12-15 kids'
   },
-
   // Superhero Category
   {
     id: 'superhero-training',
@@ -73,7 +78,6 @@ export const inflatablesData: Inflatable[] = [
     dimensions: '14ft x 16ft x 13ft',
     capacity: '6-8 kids'
   },
-
   // Sports Category
   {
     id: 'sports-arena',
@@ -108,7 +112,6 @@ export const inflatablesData: Inflatable[] = [
     dimensions: '15ft x 15ft x 11ft',
     capacity: '6-10 kids'
   },
-
   // Toddler Category
   {
     id: 'toddler-safe',
@@ -145,10 +148,71 @@ export const inflatablesData: Inflatable[] = [
   }
 ];
 
-export const getInflatablesByCategory = (categoryId: string): Inflatable[] => {
-  return inflatablesData.filter(inflatable => inflatable.category === categoryId);
+const stringifyFeatures = (features: string[]): string | null => {
+  if (!features || features.length === 0) return null;
+  return JSON.stringify(features);
 };
 
-export const getInflatableById = (id: string): Inflatable | undefined => {
-  return inflatablesData.find(inflatable => inflatable.id === id);
+const seedInflatables = async () => {
+  try {
+    console.log('Initializing database...');
+    await initializeDatabase();
+
+    console.log('Checking existing inflatables...');
+    const existing = await database.all('SELECT id FROM inflatables') as Array<{ id: string }>;
+    const existingIds = new Set(existing.map(row => row.id));
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const inflatable of inflatablesData) {
+      if (existingIds.has(inflatable.id)) {
+        console.log(`⏭️  Skipping ${inflatable.name} (already exists)`);
+        skipped++;
+        continue;
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        database.instance.run(
+          `INSERT INTO inflatables (
+            id, name, description, image, price, category, 
+            features, dimensions, capacity, is_active, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)`,
+          [
+            inflatable.id,
+            inflatable.name,
+            inflatable.description,
+            inflatable.image,
+            inflatable.price,
+            inflatable.category,
+            stringifyFeatures(inflatable.features),
+            inflatable.dimensions,
+            inflatable.capacity,
+          ],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+
+      console.log(`✅ Created ${inflatable.name}`);
+      created++;
+    }
+
+    console.log('\n📊 Summary:');
+    console.log(`   Created: ${created}`);
+    console.log(`   Skipped: ${skipped}`);
+    console.log(`   Total: ${inflatablesData.length}`);
+    console.log('\n✨ Seeding complete!');
+
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error seeding inflatables:', error);
+    process.exit(1);
+  }
 };
+
+// Run if executed directly
+seedInflatables();
+

@@ -1,6 +1,7 @@
 import React from 'react';
 import './InflatablesPage.css';
-import { inflatablesData, type Inflatable } from '../data/inflatables';
+import type { Inflatable } from '../services/inventoryService';
+import { useInflatablesByCategory } from '../hooks/useInflatables';
 
 interface InflatablesPageProps {
   categoryId: string;
@@ -37,7 +38,7 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
   onBackToCategories,
   onQuickBook
 }) => {
-  const inflatables: Inflatable[] = inflatablesData.filter(inflatable => inflatable.category === categoryId);
+  const { inflatables, loading, error } = useInflatablesByCategory(categoryId);
   
   const getCategoryTitle = (categoryId: string): string => {
     const titles: { [key: string]: string } = {
@@ -69,30 +70,65 @@ const InflatablesPage: React.FC<InflatablesPageProps> = ({
         <p>{getCategoryDescription(categoryId)}</p>
       </div>
       
-      <div className="inflatables-grid">
-        {inflatables.map((inflatable: Inflatable) => (
-          <div
-            key={inflatable.id}
-            className="inflatable-card"
-            onClick={() => onInflatableSelect(inflatable)}
-          >
-            <div className="inflatable-image">
-              <img src={inflatable.image} alt={inflatable.name} />
-              <div className="price-badge">${inflatable.price}</div>
-            </div>
-            
-            <div className="inflatable-content">
-              <h3 className="inflatable-name">{inflatable.name}</h3>
-              <div className="inflatable-dimensions">
-                {formatDimensions(inflatable.dimensions)}
+      {loading && (
+        <div className="loading-message">Loading inflatables...</div>
+      )}
+      
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={() => window.location.reload()} style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}>
+            Retry
+          </button>
+        </div>
+      )}
+      
+      {!loading && !error && inflatables.length === 0 && (
+        <div className="empty-message">No inflatables found in this category.</div>
+      )}
+      
+      {!loading && !error && inflatables.length > 0 && (
+        <div className="inflatables-grid">
+          {inflatables.map((inflatable: Inflatable) => (
+            <div
+              key={inflatable.id}
+              className="inflatable-card"
+              onClick={() => onInflatableSelect(inflatable)}
+            >
+              <div className="inflatable-image">
+                {inflatable.image ? (
+                  <img src={inflatable.image} alt={inflatable.name} />
+                ) : (
+                  <div style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    background: '#f3f4f6', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: '#9ca3af'
+                  }}>
+                    No Image
+                  </div>
+                )}
+                <div className="price-badge">${inflatable.price}</div>
               </div>
-              <div className="inflatable-price-display">
-                ${inflatable.price.toFixed(0)}
+              
+              <div className="inflatable-content">
+                <h3 className="inflatable-name">{inflatable.name}</h3>
+                {inflatable.dimensions && (
+                  <div className="inflatable-dimensions">
+                    {formatDimensions(inflatable.dimensions)}
+                  </div>
+                )}
+                <div className="inflatable-price-display">
+                  ${inflatable.price.toFixed(0)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

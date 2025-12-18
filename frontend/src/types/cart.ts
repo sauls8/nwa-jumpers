@@ -1,4 +1,4 @@
-import type { Inflatable } from '../data/inflatables';
+import type { Inflatable } from '../services/inventoryService';
 
 export interface CartItem {
   id: string; // Unique ID for this cart item
@@ -33,5 +33,6 @@ export interface QuoteInfo {
   event_is_indoor?: boolean;
   overnight_pickup?: boolean;
   notes?: string;
+  discount_percent?: number;
 }
 

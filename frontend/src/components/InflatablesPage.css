@@ -41,6 +41,39 @@
   margin: 0;
 }
 
+.loading-message,
+.empty-message {
+  text-align: center;
+  padding: 3rem;
+  color: #666666;
+  font-size: 1.1rem;
+}
+
+.error-message {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #dc2626;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.error-message button {
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.error-message button:hover {
+  background: #b91c1c;
+}
+
 .inflatables-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

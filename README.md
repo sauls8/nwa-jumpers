@@ -11,14 +11,21 @@ This project is a complete booking management system that allows customers to br
 **Core Functionality**
 - Responsive categories grid with inflatable browsing
 - Category → Inflatable → Booking flow with pre-filled selections
-- Dark-mode UI across all components
+- Light theme UI with modern design
 - Integrated availability calendar with real-time booking checks
-- Booking form with date/time selection and validation
-- Shopping cart system for multiple bookings
-- Quote generation with pricing breakdown
+- Comprehensive booking form with multi-item selection
+- Shopping cart system with item removal and running totals
+- Quote generation with automatic pricing calculations
 - Admin dashboard with date filtering and PDF export
 - Backend REST API with SQLite persistence
 - Inflatable-specific availability checking
+
+**Recent UX Improvements** ✨
+- **Real-time form validation** with inline error messages and success indicators
+- **Cart management** - remove items, view running total in header
+- **Loading states** on buttons during submission to prevent double-clicks
+- **Form data persistence** using localStorage (data saved automatically)
+- **Automatic pricing** with discounts (10% multiple items, 15% $1,200+, 20% $2,000+) and fees (surface, overnight)
 
 **Deployment Ready**
 - Environment variable configuration for production
@@ -29,9 +36,10 @@ This project is a complete booking management system that allows customers to br
 - Excel-to-TypeScript conversion script included
 - Template and step-by-step instructions provided
 
-**Ongoing Improvements**
-- Inventory data import and catalog updates
-- Enhanced error handling and validation
+**Future Enhancements**
+- Email notifications for booking confirmations
+- Payment processing integration
+- Customer accounts and booking history
 - Admin authentication and access control
 - Additional export formats (CSV, email summaries)
 
@@ -109,9 +117,12 @@ nwa-jumpers/
 - Browse inflatables by category
 - View detailed inflatable information (pricing, capacity, dimensions)
 - Interactive calendar with real-time availability checking
-- Multi-item shopping cart
-- Quote generation with tax calculation
-- Form validation and error handling
+- Multi-item shopping cart with remove functionality
+- Real-time form validation with visual feedback
+- Automatic pricing calculations (discounts and fees)
+- Quote generation with detailed breakdown
+- Form data persistence (saved automatically)
+- Loading states and user feedback
 
 ### Admin Features
 - View all bookings by date
