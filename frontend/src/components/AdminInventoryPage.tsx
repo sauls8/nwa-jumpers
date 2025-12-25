@@ -525,3 +525,5 @@ const AdminInventoryPage: React.FC<AdminInventoryPageProps> = ({ onBack }) => {
 
 export default AdminInventoryPage;
 
+
+

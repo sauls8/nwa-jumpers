@@ -222,3 +222,5 @@ export const bulkCreateInflatables = async (inflatables: CreateInflatableRequest
   }
 };
 
+
+
